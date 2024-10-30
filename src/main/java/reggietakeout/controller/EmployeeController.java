@@ -1,6 +1,7 @@
 package reggietakeout.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/employee")
+@Slf4j
 public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
@@ -49,6 +51,21 @@ public class EmployeeController {
 
         // 登录成功，服务器存储账号id，保存登陆状态
         request.getSession().setAttribute("employee", emp.getId());
+        log.info("登录成功，当前员工id：{}", emp.getId());
+
         return R.success(emp);
+    }
+
+    /**
+     * 退出登录
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/logout")
+    public R<String> logout(HttpServletRequest request) {
+        // 服务端从session中移除员工id
+        request.getSession().removeAttribute("employee");
+        return R.success("退出登录");
     }
 }
