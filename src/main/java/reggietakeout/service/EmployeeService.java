@@ -5,4 +5,6 @@ import reggietakeout.entity.Employee;
 
 public interface EmployeeService extends IService<Employee> {
     Employee selectByUsername(String username);
+
+    void insert(Employee employee, Long userId);
 }
