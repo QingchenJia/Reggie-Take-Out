@@ -1,13 +1,11 @@
 package reggietakeout.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reggietakeout.common.R;
 import reggietakeout.entity.Employee;
 import reggietakeout.service.EmployeeService;
@@ -92,5 +90,25 @@ public class EmployeeController {
 
         // 返回成功结果，表示新增员工操作成功
         return R.success("新增员工成功");
+    }
+
+    /**
+     * 处理员工信息分页查询请求
+     *
+     * @param page 分页查询的页码
+     * @param pageSize 每页显示的记录数
+     * @param name 员工姓名，用于模糊查询
+     * @return 返回分页查询结果封装在R对象中
+     */
+    @GetMapping("/page")
+    public R<Page<Employee>> page(int page, int pageSize, String name) {
+        // 创建分页对象，设置分页参数
+        Page<Employee> pageInfo = new Page<>(page, pageSize);
+
+        // 调用服务层方法，查询分页数据
+        Page<Employee> pageResult = employeeService.selectPage(pageInfo, name);
+
+        // 返回分页结果
+        return R.success(pageResult);
     }
 }

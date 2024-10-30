@@ -16,3 +16,5 @@ mybatis-plus:
       id-type: assign_id
   configuration:
     map-underscore-to-camel-case: true
+
+# http://localhost:9110/backend/page/login/login.html

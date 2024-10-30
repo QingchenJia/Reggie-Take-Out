@@ -1,6 +1,8 @@
 package reggietakeout.service.impl;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -47,8 +49,8 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         if (selectByUsername(username) != null)
             throw new UsernameRepeatException("用户名已存在");
 
-        // 设置员工初始状态为0，表示该员工账户是激活的
-        employee.setStatus(0);
+        // 设置员工初始状态为1，表示该员工账户是激活的
+        employee.setStatus(1);
         // 使用MD5加密算法对默认密码"123456"进行加密处理，确保密码安全性
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
 
@@ -62,5 +64,32 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
 
         // 调用save方法保存员工信息到数据库
         save(employee);
+    }
+
+    /**
+     * 根据员工姓名查询员工信息，并按照更新时间降序排列
+     * 此方法用于处理员工信息的分页查询，可以根据姓名模糊匹配员工记录，
+     * 并确保查询结果是按照更新时间从新到旧排序的
+     *
+     * @param pageInfo 分页信息，包含当前页码、每页大小等信息
+     * @param name 员工姓名，用于模糊查询
+     * @return 返回填充了查询结果的分页信息对象
+     */
+    @Override
+    public Page selectPage(Page pageInfo, String name) {
+        // 创建Lambda查询包装器，用于构造查询条件
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 如果姓名参数不为空也不为空字符串，则添加模糊查询条件
+        // 这里使用StringUtil.notNullNorEmpty判断name是否为空或空字符串
+        // 如果满足条件，则按照Employee类中的getName方法进行模糊查询
+        queryWrapper.like(StringUtil.notNullNorEmpty(name), Employee::getName, name)
+                    .orderByDesc(Employee::getUpdateTime); // 添加按照更新时间降序排序的条件
+
+        // 执行分页查询，传入分页信息和查询条件
+        page(pageInfo, queryWrapper);
+
+        // 返回填充了查询结果的分页信息对象
+        return pageInfo;
     }
 }
