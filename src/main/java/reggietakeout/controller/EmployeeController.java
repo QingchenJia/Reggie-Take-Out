@@ -122,6 +122,9 @@ public class EmployeeController {
      */
     @PutMapping()
     public R<String> update(HttpServletRequest request, @RequestBody Employee employee) {
+        // 记录更新员工的日志信息
+        log.info("更新员工，员工信息：{}", employee.toString());
+
         // 从会话中获取当前用户的ID，用于记录是谁进行了更新操作
         Long userId = (Long) request.getSession().getAttribute("employee");
 
@@ -129,5 +132,25 @@ public class EmployeeController {
         employeeService.updateEmployee(employee, userId);
         // 返回成功响应，表示员工信息修改成功
         return R.success("员工信息修改成功");
+    }
+
+    /**
+     * 根据员工ID获取员工信息
+     *
+     * @param id 员工ID，通过URL路径传入
+     * @return 返回一个封装了员工信息的响应对象如果未找到对应员工，则返回错误信息
+     */
+    @GetMapping("/{id}")
+    public R<Employee> getById(@PathVariable Long id) {
+        // 调用服务层方法，根据ID查询员工
+        Employee employee = employeeService.getById(id);
+
+        // 判断员工是否为空
+        if (employee != null) {
+            // 如果员工不为空，返回成功响应，包含员工信息
+            return R.success(employee);
+        }
+        // 如果员工为空，返回错误响应，包含错误信息
+        return R.error("没有查询到对应员工");
     }
 }
