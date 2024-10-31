@@ -86,7 +86,7 @@ public class EmployeeController {
         Long userId = (Long) request.getSession().getAttribute("employee");
 
         // 调用服务层方法，插入新员工信息到数据库，并传入当前用户ID
-        employeeService.insert(employee, userId);
+        employeeService.insert(employee/*, userId*/);
 
         // 返回成功结果，表示新增员工操作成功
         return R.success("新增员工成功");

@@ -38,10 +38,9 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
      * 创建和更新时间以及创建和更新用户ID这些默认值是为了确保新员工账户的一致性和安全性
      *
      * @param employee 待插入的员工对象，包含员工的相关信息
-     * @param userId   创建用户的ID，用于记录是谁添加了该员工
      */
     @Override
-    public void insert(Employee employee, Long userId) {
+    public void insert(Employee employee) {
         // 获取员工用户名，用于检查是否重复
         String username = employee.getUsername();
 
@@ -54,17 +53,10 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         // 使用MD5加密算法对默认密码"123456"进行加密处理，确保密码安全性
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
 
-        // 设置创建时间和更新时间为当前系统时间，表示员工信息的创建和最后修改时间
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
-
-        // 设置创建用户ID和更新用户ID为传入的userId，记录是谁创建和更新了该员工信息
-        employee.setCreateUser(userId);
-        employee.setUpdateUser(userId);
-
         // 调用save方法保存员工信息到数据库
         save(employee);
     }
+
 
     /**
      * 根据员工姓名查询员工信息，并按照更新时间降序排列

@@ -7,7 +7,7 @@ import reggietakeout.entity.Employee;
 public interface EmployeeService extends IService<Employee> {
     Employee selectByUsername(String username);
 
-    void insert(Employee employee, Long userId);
+    void insert(Employee employee);
 
     Page selectPage(Page pageInfo, String name);
 
