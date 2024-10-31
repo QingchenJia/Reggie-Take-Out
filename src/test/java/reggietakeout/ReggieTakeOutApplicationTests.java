@@ -22,4 +22,18 @@ class ReggieTakeOutApplicationTests {
         Page<Employee> pageResult = employeeService.selectPage(pageInfo,"A");
         System.out.println(pageResult.getRecords());
     }
+
+    @Test
+    void filedNameAutoFill() {
+        Employee employee = new Employee();
+        employee.setUsername("eric");
+        employee.setName("Eric");
+        employee.setSex("1");
+        employee.setPhone("15745693652");
+        employee.setIdNumber("512632199904211457");
+
+        employee.setStatus(1);
+
+        employeeService.save(employee);
+    }
 }

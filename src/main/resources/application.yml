@@ -16,5 +16,6 @@ mybatis-plus:
       id-type: assign_id
   configuration:
     map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 # http://localhost:9110/backend/page/login/login.html
