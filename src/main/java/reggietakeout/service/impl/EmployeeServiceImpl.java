@@ -72,7 +72,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
      * 并确保查询结果是按照更新时间从新到旧排序的
      *
      * @param pageInfo 分页信息，包含当前页码、每页大小等信息
-     * @param name 员工姓名，用于模糊查询
+     * @param name     员工姓名，用于模糊查询
      * @return 返回填充了查询结果的分页信息对象
      */
     @Override
@@ -84,12 +84,31 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         // 这里使用StringUtil.notNullNorEmpty判断name是否为空或空字符串
         // 如果满足条件，则按照Employee类中的getName方法进行模糊查询
         queryWrapper.like(StringUtil.notNullNorEmpty(name), Employee::getName, name)
-                    .orderByDesc(Employee::getUpdateTime); // 添加按照更新时间降序排序的条件
+                .orderByDesc(Employee::getUpdateTime);  // 添加按照更新时间降序排序的条件
 
         // 执行分页查询，传入分页信息和查询条件
         page(pageInfo, queryWrapper);
 
         // 返回填充了查询结果的分页信息对象
         return pageInfo;
+    }
+
+    /**
+     * 更新员工信息的方法
+     * <p>
+     * 该方法主要用于更新系统中的员工信息它接受两个参数：需要更新的员工对象和当前操作的用户ID
+     * 方法内部会设置更新者和更新时间，然后调用updateById方法来执行更新操作
+     *
+     * @param employee 需要更新的员工对象，包含需要更新的信息
+     * @param userId   当前操作的用户ID，用于记录是谁进行了这次更新操作
+     */
+    @Override
+    public void updateEmployee(Employee employee, Long userId) {
+        // 设置更新者的用户ID
+        employee.setUpdateUser(userId);
+        // 设置更新时间当前时间
+        employee.setUpdateTime(LocalDateTime.now());
+        // 根据员工ID更新员工信息
+        updateById(employee);
     }
 }

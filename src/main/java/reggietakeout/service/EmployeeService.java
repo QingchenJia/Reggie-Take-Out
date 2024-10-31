@@ -10,4 +10,6 @@ public interface EmployeeService extends IService<Employee> {
     void insert(Employee employee, Long userId);
 
     Page selectPage(Page pageInfo, String name);
+
+    void updateEmployee(Employee employee,Long userId);
 }
