@@ -70,4 +70,23 @@ public class CategoryController {
         // 返回成功响应，表示删除成功
         return R.success("删除成功");
     }
+
+    /**
+     * 更新分类信息的接口方法
+     * 该方法通过HTTP PUT请求接收一个Category对象作为请求体，并尝试更新数据库中的对应分类信息
+     *
+     * @param category 包含更新后分类信息的Category对象，通过请求体传递
+     * @return 返回一个表示操作结果的R对象，包含成功消息
+     */
+    @PutMapping()
+    public R<String> update(@RequestBody Category category) {
+        // 记录日志，输出修改分类信息的详细内容
+        log.info("修改分类信息：{}", category);
+
+        // 调用服务层方法，根据传入的Category对象更新数据库中的分类信息
+        categoryService.updateById(category);
+
+        // 返回成功响应，包含成功消息
+        return R.success("修改分类信息成功");
+    }
 }
