@@ -54,4 +54,20 @@ public class CategoryController {
         // 返回查询结果，封装为R对象表示成功
         return R.success(pageResult);
     }
+
+    /**
+     * 处理删除分类信息的请求
+     * 通过HTTP DELETE方法接收要删除的分类ID
+     *
+     * @param id 要删除的分类的ID
+     * @return 返回一个响应对象，包含删除操作的结果信息
+     */
+    @DeleteMapping()
+    public R<String> delete(@RequestParam("ids") Long id) {
+        // 调用服务层方法，根据id删除分类信息
+        categoryService.deleteById(id);
+
+        // 返回成功响应，表示删除成功
+        return R.success("删除成功");
+    }
 }

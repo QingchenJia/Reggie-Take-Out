@@ -10,4 +10,6 @@ public interface CategoryService extends IService<Category> {
     Category selectByName(String name);
 
     Page selectPage(Page pageInfo);
+
+    void deleteById(Long id);
 }

@@ -3,14 +3,23 @@ package reggietakeout.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reggietakeout.entity.Category;
+import reggietakeout.exception.CategoryNotEmpty;
 import reggietakeout.exception.NameRepeatException;
 import reggietakeout.mapper.CategoryMapper;
 import reggietakeout.service.CategoryService;
+import reggietakeout.service.DishService;
+import reggietakeout.service.SetmealService;
 
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
+    @Autowired
+    private DishService dishService;
+    @Autowired
+    private SetmealService setmealService;
+
     /**
      * 插入一个新的分类
      * <p>
@@ -77,5 +86,28 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         // 返回填充了查询结果的pageInfo对象
         return pageInfo;
+    }
+
+    /**
+     * 根据类别ID删除类别
+     * 此方法首先检查是否有菜品或套餐关联了待删除的类别，如果有关联，则抛出异常，防止删除操作
+     * 如果没有关联，则调用removeById方法进行删除操作
+     *
+     * @param id 待删除的类别ID
+     * @throws CategoryNotEmpty 当尝试删除的类别有关联的菜品或套餐时抛出此异常
+     */
+    @Override
+    public void deleteById(Long id) {
+        // 检查待删除的类别下是否有菜品
+        int dishCount = dishService.getCountByCategoryId(id);
+        // 检查待删除的类别下是否有套餐
+        int setmealCount = setmealService.getCountByCategoryId(id);
+
+        // 如果类别下存在菜品或套餐，则抛出异常，防止删除类别
+        if (dishCount > 0 || setmealCount > 0)
+            throw new CategoryNotEmpty("当前分类关联了菜品或套餐，无法删除");
+
+        // 如果类别下没有菜品或套餐，则执行删除操作
+        removeById(id);
     }
 }
