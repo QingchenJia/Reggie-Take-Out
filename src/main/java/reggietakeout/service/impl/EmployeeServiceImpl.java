@@ -82,18 +82,4 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         // 返回填充了查询结果的分页信息对象
         return pageInfo;
     }
-
-    /**
-     * 更新员工信息
-     * <p>
-     * 该方法用于更新系统中的员工记录根据提供的员工对象中的ID，修改数据库中对应的员工信息
-     * 此处使用了updateById方法，假设这是对MyBatis-Plus或类似框架的调用，该框架提供了根据ID更新记录的功能
-     *
-     * @param employee 要更新的员工对象包含需要更新的员工信息，必须包含员工ID
-     */
-    @Override
-    public void updateEmployee(Employee employee) {
-        // 根据员工ID更新员工信息
-        updateById(employee);
-    }
 }

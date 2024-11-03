@@ -125,7 +125,7 @@ public class EmployeeController {
         log.info("更新员工，员工信息：{}", employee.toString());
 
         // 调用服务层方法更新员工信息
-        employeeService.updateEmployee(employee);
+        employeeService.updateById(employee);
         // 返回成功响应，表示员工信息修改成功
         return R.success("员工信息修改成功");
     }
