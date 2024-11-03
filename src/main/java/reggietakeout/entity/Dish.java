@@ -37,4 +37,5 @@ public class Dish implements Serializable {
     private Long createUser;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
+    private Integer isDeleted;
 }
