@@ -114,22 +114,18 @@ public class EmployeeController {
 
     /**
      * 更新员工信息的接口
-     * 该方法通过Put请求接收员工信息，并更新数据库中的员工记录
+     * 使用PUT请求映射来更新数据库中的员工记录
      *
-     * @param request HTTP请求对象，用于获取当前会话的用户ID
-     * @param employee 员工对象，包含要更新的员工信息
-     * @return 返回一个自定义的响应对象，表示员工信息是否修改成功
+     * @param employee 包含更新后员工信息的请求体
+     * @return 返回一个响应对象，包含操作结果的字符串消息
      */
     @PutMapping()
-    public R<String> update(HttpServletRequest request, @RequestBody Employee employee) {
+    public R<String> update(@RequestBody Employee employee) {
         // 记录更新员工的日志信息
         log.info("更新员工，员工信息：{}", employee.toString());
 
-        // 从会话中获取当前用户的ID，用于记录是谁进行了更新操作
-        Long userId = (Long) request.getSession().getAttribute("employee");
-
         // 调用服务层方法更新员工信息
-        employeeService.updateEmployee(employee, userId);
+        employeeService.updateEmployee(employee);
         // 返回成功响应，表示员工信息修改成功
         return R.success("员工信息修改成功");
     }

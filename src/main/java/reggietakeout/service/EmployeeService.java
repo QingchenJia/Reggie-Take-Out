@@ -11,5 +11,5 @@ public interface EmployeeService extends IService<Employee> {
 
     Page selectPage(Page pageInfo, String name);
 
-    void updateEmployee(Employee employee,Long userId);
+    void updateEmployee(Employee employee);
 }

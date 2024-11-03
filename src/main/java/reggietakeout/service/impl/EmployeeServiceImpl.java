@@ -11,8 +11,6 @@ import reggietakeout.exception.UsernameRepeatException;
 import reggietakeout.mapper.EmployeeMapper;
 import reggietakeout.service.EmployeeService;
 
-import java.time.LocalDateTime;
-
 @Service
 public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> implements EmployeeService {
     /**
@@ -86,20 +84,15 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     }
 
     /**
-     * 更新员工信息的方法
+     * 更新员工信息
      * <p>
-     * 该方法主要用于更新系统中的员工信息它接受两个参数：需要更新的员工对象和当前操作的用户ID
-     * 方法内部会设置更新者和更新时间，然后调用updateById方法来执行更新操作
+     * 该方法用于更新系统中的员工记录根据提供的员工对象中的ID，修改数据库中对应的员工信息
+     * 此处使用了updateById方法，假设这是对MyBatis-Plus或类似框架的调用，该框架提供了根据ID更新记录的功能
      *
-     * @param employee 需要更新的员工对象，包含需要更新的信息
-     * @param userId   当前操作的用户ID，用于记录是谁进行了这次更新操作
+     * @param employee 要更新的员工对象包含需要更新的员工信息，必须包含员工ID
      */
     @Override
-    public void updateEmployee(Employee employee, Long userId) {
-        // 设置更新者的用户ID
-        employee.setUpdateUser(userId);
-        // 设置更新时间当前时间
-        employee.setUpdateTime(LocalDateTime.now());
+    public void updateEmployee(Employee employee) {
         // 根据员工ID更新员工信息
         updateById(employee);
     }
