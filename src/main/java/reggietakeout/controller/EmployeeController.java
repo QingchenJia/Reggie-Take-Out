@@ -73,20 +73,16 @@ public class EmployeeController {
     /**
      * 保存新增员工信息
      *
-     * @param request  HTTP请求对象，用于获取当前会话的用户ID
      * @param employee 新增员工的信息，以JSON格式封装在请求体中
      * @return 返回保存结果的成功消息
      */
     @PostMapping()
-    public R<String> save(HttpServletRequest request, @RequestBody Employee employee) {
+    public R<String> save(@RequestBody Employee employee) {
         // 记录新增员工的日志信息
         log.info("新增员工，员工信息：{}", employee.toString());
 
-        // 从会话中获取当前用户的ID，用于记录是谁添加了新员工
-        Long userId = (Long) request.getSession().getAttribute("employee");
-
         // 调用服务层方法，插入新员工信息到数据库，并传入当前用户ID
-        employeeService.insert(employee/*, userId*/);
+        employeeService.insert(employee);
 
         // 返回成功结果，表示新增员工操作成功
         return R.success("新增员工成功");
