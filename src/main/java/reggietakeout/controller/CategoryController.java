@@ -8,6 +8,8 @@ import reggietakeout.common.R;
 import reggietakeout.entity.Category;
 import reggietakeout.service.CategoryService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/category")
 @Slf4j
@@ -88,5 +90,20 @@ public class CategoryController {
 
         // 返回成功响应，包含成功消息
         return R.success("修改分类信息成功");
+    }
+
+    /**
+     * 根据类型获取分类列表
+     *
+     * @param type 分类类型，用于筛选分类结果
+     * @return 返回一个响应对象，包含根据类型筛选后的分类列表
+     */
+    @GetMapping("/list")
+    public R<List<Category>> list(@RequestParam("type") Integer type) {
+        // 调用服务层方法，根据类型获取分类列表
+        List<Category> categories = categoryService.selectByType(type);
+
+        // 返回成功响应，包含分类列表
+        return R.success(categories);
     }
 }

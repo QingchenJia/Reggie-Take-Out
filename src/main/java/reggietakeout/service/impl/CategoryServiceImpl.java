@@ -13,6 +13,8 @@ import reggietakeout.service.CategoryService;
 import reggietakeout.service.DishService;
 import reggietakeout.service.SetmealService;
 
+import java.util.List;
+
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
     @Autowired
@@ -109,5 +111,22 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         // 如果类别下没有菜品或套餐，则执行删除操作
         removeById(id);
+    }
+
+    /**
+     * 根据类别类型选择类别列表
+     *
+     * @param type 类别的类型，用于筛选符合条件的类别
+     * @return 返回符合给定类型的类别列表如果找不到匹配的类别，则返回空列表
+     */
+    @Override
+    public List<Category> selectByType(Integer type) {
+        // 创建LambdaQueryWrapper对象，用于构建查询条件
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+        // 添加查询条件：类别类型等于给定的类型
+        queryWrapper.eq(Category::getType, type);
+
+        // 执行查询并返回结果列表
+        return list(queryWrapper);
     }
 }

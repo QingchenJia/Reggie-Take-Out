@@ -19,6 +19,6 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 reggie:
-  img-path: D:\Code-Storage\ReggieTakeOut\src\main\resources\img\
+  img-path: D:\Code-Storage\ReggieTakeOut\img\
 
 # http://localhost:9110/backend/page/login/login.html
