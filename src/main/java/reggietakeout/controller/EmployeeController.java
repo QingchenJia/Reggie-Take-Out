@@ -102,10 +102,10 @@ public class EmployeeController {
         Page<Employee> pageInfo = new Page<>(page, pageSize);
 
         // 调用服务层方法，查询分页数据
-        Page<Employee> pageResult = employeeService.selectPage(pageInfo, name);
+        employeeService.selectPage(pageInfo, name);
 
         // 返回分页结果
-        return R.success(pageResult);
+        return R.success(pageInfo);
     }
 
     /**

@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import reggietakeout.entity.Dish;
-import reggietakeout.entity.DishFlavor;
 import reggietakeout.mapper.DishMapper;
 import reggietakeout.service.DishService;
 
@@ -32,13 +31,25 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         return (int) count(queryWrapper);
     }
 
+    /**
+     * 根据名称查询菜品信息，并返回分页结果
+     *
+     * @param pageInfo 分页信息，包含页码、页大小等
+     * @param name     菜品名称，用于模糊查询
+     * @return 返回填充了查询结果的分页信息对象
+     */
     @Override
     public Page selectPage(Page pageInfo, String name) {
+        // 创建Lambda查询包装器，用于后续的条件查询
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 根据菜品名称进行模糊查询，仅当名称不为空且不只包含空格时执行查询
         queryWrapper.like(StringUtil.notNullNorEmpty(name), Dish::getName, name);
 
+        // 执行分页查询，结果填充到pageInfo中
         page(pageInfo, queryWrapper);
 
+        // 返回填充了查询结果的分页信息对象
         return pageInfo;
     }
 }

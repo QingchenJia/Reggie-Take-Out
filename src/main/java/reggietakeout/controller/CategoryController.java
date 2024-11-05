@@ -51,10 +51,10 @@ public class CategoryController {
         Page<Category> pageInfo = new Page<>(page, pageSize);
 
         // 调用服务层方法，执行分页查询
-        Page pageResult = categoryService.selectPage(pageInfo);
+        categoryService.selectPage(pageInfo);
 
         // 返回查询结果，封装为R对象表示成功
-        return R.success(pageResult);
+        return R.success(pageInfo);
     }
 
     /**

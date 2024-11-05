@@ -131,11 +131,20 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         return list(queryWrapper);
     }
 
+    /**
+     * 根据类别ID选择类别
+     *
+     * @param Id 类别的唯一标识
+     * @return 返回查询到的类别对象，如果没有找到则返回null
+     */
     @Override
     public Category selectById(Long Id) {
+        // 创建Lambda查询包装器以构建查询条件
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件为类别ID等于传入的ID
         queryWrapper.eq(Category::getId, Id);
 
+        // 使用查询包装器获取符合条件的单个类别对象
         return getOne(queryWrapper);
     }
 }

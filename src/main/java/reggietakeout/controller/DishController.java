@@ -50,18 +50,35 @@ public class DishController {
         return R.success("新增菜品成功");
     }
 
+    /**
+     * 根据页面号和页面大小获取菜品信息列表
+     * 此方法首先根据传入的页面号和页面大小创建一个Page对象，然后调用dishService的selectPage方法查询菜品信息
+     * 如果查询成功，进一步将查询结果转换为DishDto对象列表，并设置相应的菜品分类名称
+     * 最后，将转换后的数据封装到Page对象中返回
+     *
+     * @param page     页面号，用于指定从哪一页开始查询
+     * @param pageSize 页面大小，用于指定每页显示的记录数
+     * @param name     菜品名称，用于模糊查询
+     * @return 返回一个封装了菜品信息列表的响应对象
+     */
     @GetMapping("/page")
     public R<Page<DishDto>> page(int page, int pageSize, String name) {
+        // 创建Page对象，用于封装分页查询的参数
         Page<Dish> pageInfo = new Page<>(page, pageSize);
+        // 调用服务层方法，执行分页查询
         dishService.selectPage(pageInfo, name);
 
+        // 获取查询结果中的记录列表
         List<Dish> dishes = pageInfo.getRecords();
 
+        // 将查询到的Dish对象转换为DishDto对象，并设置菜品分类名称
         List<DishDto> dishDtos = dishes.stream()
                 .map(dish -> {
                     DishDto dishDto = new DishDto();
+                    // 复制Dish对象的属性到DishDto对象
                     BeanUtils.copyProperties(dish, dishDto);
 
+                    // 根据菜品分类ID查询分类名称，并设置到DishDto对象
                     String categoryName = categoryService.selectById(dish.getCategoryId()).getName();
                     dishDto.setCategoryName(categoryName);
 
@@ -69,11 +86,15 @@ public class DishController {
                 })
                 .toList();
 
+        // 创建一个新的Page对象，用于封装转换后的查询结果
         Page<DishDto> pageResult = new Page<>();
+        // 复制分页信息到新的Page对象，但不包括records属性
         BeanUtils.copyProperties(pageInfo, pageResult, "records");
 
+        // 设置转换后的菜品信息列表到新的Page对象
         pageResult.setRecords(dishDtos);
 
+        // 返回封装了查询结果的响应对象
         return R.success(pageResult);
     }
 }
