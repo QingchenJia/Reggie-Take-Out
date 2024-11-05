@@ -8,4 +8,6 @@ public interface DishService extends IService<Dish> {
     int getCountByCategoryId(Long categoryId);
 
     Page selectPage(Page pageInfo, String name);
+
+    Dish selectById(Long Id);
 }

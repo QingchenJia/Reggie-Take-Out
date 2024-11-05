@@ -52,4 +52,21 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         // 返回填充了查询结果的分页信息对象
         return pageInfo;
     }
+
+    /**
+     * 根据菜品ID选择菜品信息
+     *
+     * @param id 菜品的唯一标识符
+     * @return 返回查询到的菜品对象，如果没有找到则返回null
+     */
+    @Override
+    public Dish selectById(Long id) {
+        // 创建Lambda查询包装器，用于条件查询
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件，根据菜品ID进行等值查询
+        queryWrapper.eq(Dish::getId, id);
+
+        // 执行查询并返回唯一的一条记录，如果没有记录则返回null
+        return getOne(queryWrapper);
+    }
 }

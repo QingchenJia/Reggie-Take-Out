@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import reggietakeout.common.R;
 import reggietakeout.dto.DishDto;
 import reggietakeout.entity.Dish;
+import reggietakeout.entity.DishFlavor;
 import reggietakeout.service.CategoryService;
 import reggietakeout.service.DishFlavorService;
 import reggietakeout.service.DishService;
@@ -96,5 +97,59 @@ public class DishController {
 
         // 返回封装了查询结果的响应对象
         return R.success(pageResult);
+    }
+
+    /**
+     * 根据菜品ID获取菜品详细信息，包括菜品的基本信息和口味信息
+     *
+     * @param id 菜品的唯一标识符
+     * @return 返回一个包含菜品详细信息的结果对象
+     */
+    @GetMapping("/{id}")
+    public R<DishDto> getById(@PathVariable Long id) {
+        // 根据ID查询菜品基本信息
+        Dish dish = dishService.selectById(id);
+
+        // 根据菜品ID查询该菜品的所有口味信息
+        List<DishFlavor> flavors = dishFlavorService.selectByDishId(id);
+
+        // 创建一个菜品数据传输对象，用于封装菜品基本信息和口味信息
+        DishDto dishDto = new DishDto();
+        // 将菜品基本信息复制到菜品数据传输对象中
+        BeanUtils.copyProperties(dish, dishDto);
+        // 将口味信息设置到菜品数据传输对象中
+        dishDto.setFlavors(flavors);
+
+        // 返回包含菜品详细信息的成功结果
+        return R.success(dishDto);
+    }
+
+    /**
+     * 更新菜品信息的接口
+     * <p>
+     * 该接口接收一个DishDto对象作为参数，用于更新菜品及其相关风味的信息
+     * 使用PutMapping注解限定HTTP请求方法为PUT，表示更新操作
+     *
+     * @param dishDto 要更新的菜品信息，包括菜品的基本信息和风味信息
+     * @return 返回一个表示操作结果的响应对象，包含操作是否成功和提示信息
+     */
+    @PutMapping()
+    public R<String> update(@RequestBody DishDto dishDto) {
+        // 记录日志，输出修改菜品的信息，便于调试和审计
+        log.info("修改菜品信息：{}", dishDto);
+
+        // 创建一个新的Dish对象，并将DishDto中的属性复制到Dish对象中
+        // 这样做是为了将传入的DTO对象转换为实体对象，以便进行数据库操作
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDto, dish);
+
+        // 调用dishService的updateById方法，根据ID更新菜品的基本信息
+        dishService.updateById(dish);
+
+        // 调用dishFlavorService的updateDishFlavor方法，更新与菜品相关的风味信息
+        dishFlavorService.updateDishFlavor(dishDto);
+
+        // 返回成功响应，表示菜品信息修改成功
+        return R.success("修改菜品信息成功");
     }
 }
