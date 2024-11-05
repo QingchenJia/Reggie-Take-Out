@@ -1,16 +1,19 @@
 package reggietakeout.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reggietakeout.common.R;
 import reggietakeout.dto.DishDto;
+import reggietakeout.entity.Dish;
+import reggietakeout.service.CategoryService;
 import reggietakeout.service.DishFlavorService;
 import reggietakeout.service.DishService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/dish")
@@ -20,6 +23,8 @@ public class DishController {
     private DishService dishService;
     @Autowired
     private DishFlavorService dishFlavorService;
+    @Autowired
+    private CategoryService categoryService;
 
     /**
      * 处理新增菜品的请求
@@ -43,5 +48,32 @@ public class DishController {
 
         // 返回成功响应，表示菜品新增成功
         return R.success("新增菜品成功");
+    }
+
+    @GetMapping("/page")
+    public R<Page<DishDto>> page(int page, int pageSize, String name) {
+        Page<Dish> pageInfo = new Page<>(page, pageSize);
+        dishService.selectPage(pageInfo, name);
+
+        List<Dish> dishes = pageInfo.getRecords();
+
+        List<DishDto> dishDtos = dishes.stream()
+                .map(dish -> {
+                    DishDto dishDto = new DishDto();
+                    BeanUtils.copyProperties(dish, dishDto);
+
+                    String categoryName = categoryService.selectById(dish.getCategoryId()).getName();
+                    dishDto.setCategoryName(categoryName);
+
+                    return dishDto;
+                })
+                .toList();
+
+        Page<DishDto> pageResult = new Page<>();
+        BeanUtils.copyProperties(pageInfo, pageResult, "records");
+
+        pageResult.setRecords(dishDtos);
+
+        return R.success(pageResult);
     }
 }

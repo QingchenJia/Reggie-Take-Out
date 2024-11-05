@@ -55,4 +55,13 @@ class ReggieTakeOutApplicationTests {
             System.out.println(dish);
         }
     }
+
+    @Test
+    void testQueryDishPage() {
+        Page<Dish> pageInfo = new Page<>(1L, 10L);
+
+        dishService.selectPage(pageInfo, null);
+
+        pageInfo.getRecords().forEach(System.out::println);
+    }
 }

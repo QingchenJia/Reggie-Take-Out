@@ -1,10 +1,12 @@
 package reggietakeout.service.impl;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
-import reggietakeout.dto.DishDto;
 import reggietakeout.entity.Dish;
+import reggietakeout.entity.DishFlavor;
 import reggietakeout.mapper.DishMapper;
 import reggietakeout.service.DishService;
 
@@ -28,5 +30,15 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
         // 执行查询并返回结果，将结果转换为int类型
         return (int) count(queryWrapper);
+    }
+
+    @Override
+    public Page selectPage(Page pageInfo, String name) {
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(StringUtil.notNullNorEmpty(name), Dish::getName, name);
+
+        page(pageInfo, queryWrapper);
+
+        return pageInfo;
     }
 }

@@ -81,7 +81,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
 
         // 添加查询条件：当name非空且不为空字符串时，按名称查询，并按sort字段升序排列
-        queryWrapper.orderByAsc(Category::getSort);
+        queryWrapper.orderByAsc(Category::getType)
+                .orderByAsc(Category::getSort);
 
         // 执行分页查询，并将结果填充到pageInfo中
         page(pageInfo, queryWrapper);
@@ -128,5 +129,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         // 执行查询并返回结果列表
         return list(queryWrapper);
+    }
+
+    @Override
+    public Category selectById(Long Id) {
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Category::getId, Id);
+
+        return getOne(queryWrapper);
     }
 }
