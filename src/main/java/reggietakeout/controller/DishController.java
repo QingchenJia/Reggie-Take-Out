@@ -14,6 +14,7 @@ import reggietakeout.service.CategoryService;
 import reggietakeout.service.DishFlavorService;
 import reggietakeout.service.DishService;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -151,5 +152,62 @@ public class DishController {
 
         // 返回成功响应，表示菜品信息修改成功
         return R.success("修改菜品信息成功");
+    }
+
+    /**
+     * 处理停止销售的请求
+     * 该方法接收一个包含多个菜品ID的字符串参数，将这些菜品的状态更新为停止销售
+     *
+     * @param ids 一个包含多个菜品ID的字符串，ID之间用逗号分隔
+     * @return 返回一个表示操作成功的响应对象
+     */
+    @PostMapping("/status/0")
+    public R<String> noSell(@RequestParam("ids") String ids) {
+        // 将输入的字符串按逗号分割，并转换为Long型的ID列表
+        Arrays.stream(ids.split(","))
+                .map(Long::parseLong)
+                .toList()
+                .stream()
+                // 创建Dish对象，设置ID和状态为0（表示停止销售）
+                .map(id -> {
+                            Dish dish = new Dish();
+                            dish.setId(id);
+                            dish.setStatus(0);
+                            return dish;
+                        }
+                ).toList()
+                // 遍历列表，调用服务层方法更新每个菜品的状态
+                .forEach(dishService::updateById);
+
+        // 返回操作成功的响应
+        return R.success("停售成功");
+    }
+
+    /**
+     * 更新菜品状态为起售状态
+     * 该接口接收一个或多个菜品ID，将这些菜品的状态更新为起售（状态码为0）
+     *
+     * @param ids 要更新状态的菜品ID，多个ID用逗号分隔
+     * @return 返回一个表示操作结果的响应对象
+     */
+    @PostMapping("/status/1")
+    public R<String> yesSell(@RequestParam("ids") String ids) {
+        // 将传入的ID字符串按逗号分割，并转换为Long类型，创建Dish对象，设置其ID和状态，然后调用更新方法
+        Arrays.stream(ids.split(","))
+                .map(Long::parseLong)
+                .toList()
+                .stream()
+                .map(id -> {
+                            // 创建一个新的Dish对象，并设置其ID和状态为0（起售状态）
+                            Dish dish = new Dish();
+                            dish.setId(id);
+                            dish.setStatus(1);
+                            return dish;
+                        }
+                ).toList()
+                .forEach(dishService::updateById);
+
+        // 返回成功响应，表示起售操作成功
+        return R.success("起售成功");
     }
 }

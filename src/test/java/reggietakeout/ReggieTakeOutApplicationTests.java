@@ -9,6 +9,7 @@ import reggietakeout.entity.Employee;
 import reggietakeout.service.DishService;
 import reggietakeout.service.EmployeeService;
 
+import java.util.Arrays;
 import java.util.List;
 
 @SpringBootTest
@@ -63,5 +64,13 @@ class ReggieTakeOutApplicationTests {
         dishService.selectPage(pageInfo, null);
 
         pageInfo.getRecords().forEach(System.out::println);
+    }
+
+    @Test
+    void testString2LongList() {
+        Arrays.stream("1853439708533260290,1413385247889891330,1413342036832100354,1413384757047271425".split(","))
+                .map(id -> Long.parseLong(id))
+                .toList()
+                .forEach(System.out::println);
     }
 }
