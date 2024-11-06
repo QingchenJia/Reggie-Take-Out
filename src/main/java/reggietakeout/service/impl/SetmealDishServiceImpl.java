@@ -1,5 +1,6 @@
 package reggietakeout.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import reggietakeout.dto.SetmealDto;
@@ -30,5 +31,22 @@ public class SetmealDishServiceImpl extends ServiceImpl<SetmealDishMapper, Setme
 
         // 批量保存菜品信息
         saveBatch(setmealDishes);
+    }
+
+    /**
+     * 根据套餐ID选择套餐菜品
+     *
+     * @param setmealId 套餐ID，用于查询与之关联的套餐菜品信息
+     * @return 返回一个包含套餐菜品对象的列表，这些菜品属于指定的套餐
+     */
+    @Override
+    public List<SetmealDish> selectBySetmealId(Long setmealId) {
+        // 创建一个Lambda查询包装器，用于构建查询条件
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件，筛选出套餐ID与参数setmealId相等的套餐菜品
+        queryWrapper.eq(SetmealDish::getSetmealId, setmealId);
+
+        // 执行查询并返回结果列表
+        return list(queryWrapper);
     }
 }

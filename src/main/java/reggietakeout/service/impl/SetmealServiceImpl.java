@@ -1,6 +1,8 @@
 package reggietakeout.service.impl;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -52,5 +54,28 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
 
         // 返回生成的套餐ID
         return setmeal.getId();
+    }
+
+    /**
+     * 根据名称查询套餐信息，并按照更新时间降序排列
+     *
+     * @param pageInfo 分页信息，包含当前页码和每页记录数
+     * @param name 套餐名称，用于模糊查询
+     * @return 返回填充了套餐信息的分页对象
+     */
+    @Override
+    public Page selectPage(Page pageInfo, String name) {
+        // 创建Lambda查询包装器，用于条件查询和排序
+        LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 如果名称不为空且不为"null"，则按名称模糊查询，并按更新时间降序排序
+        queryWrapper.like(StringUtil.notNullNorEmpty(name), Setmeal::getName, name)
+                .orderByDesc(Setmeal::getUpdateTime);
+
+        // 执行分页查询
+        page(pageInfo, queryWrapper);
+
+        // 返回填充了查询结果的分页信息对象
+        return pageInfo;
     }
 }
