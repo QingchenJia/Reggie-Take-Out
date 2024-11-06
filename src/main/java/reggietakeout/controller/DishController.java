@@ -1,5 +1,6 @@
 package reggietakeout.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -232,5 +233,24 @@ public class DishController {
 
         // 返回删除成功的响应
         return R.success("删除成功");
+    }
+
+    /**
+     * 根据类别ID获取菜品列表
+     *
+     * @param categoryId 类别ID，用于筛选具有相同类别的菜品
+     * @return 返回一个包含菜品列表的响应对象
+     */
+    @GetMapping("/list")
+    public R<List<Dish>> dishList(@RequestParam("categoryId") Long categoryId) {
+        // 创建一个Lambda查询包装器，用于构建查询条件
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件，筛选出类别ID与传入参数相符的菜品
+        queryWrapper.eq(Dish::getCategoryId, categoryId);
+
+        // 调用业务服务层方法，获取符合条件的菜品列表
+        List<Dish> dishList = dishService.list(queryWrapper);
+        // 返回包含菜品列表的成功响应
+        return R.success(dishList);
     }
 }
