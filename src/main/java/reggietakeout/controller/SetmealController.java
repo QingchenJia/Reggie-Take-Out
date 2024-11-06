@@ -56,9 +56,9 @@ public class SetmealController {
     /**
      * 处理套餐分页查询请求
      *
-     * @param page 当前页码
+     * @param page     当前页码
      * @param pageSize 每页记录数
-     * @param name 套餐名称关键字
+     * @param name     套餐名称关键字
      * @return 返回包含套餐信息的分页对象
      */
     @GetMapping("/page")
@@ -99,5 +99,47 @@ public class SetmealController {
 
         // 返回包含套餐DTO分页信息的成功响应
         return R.success(pageResult);
+    }
+
+    /**
+     * 更新套餐状态为停售
+     * 该方法通过接收一系列套餐ID，将这些套餐的状态更新为停售（状态码为0）
+     *
+     * @param ids 待停售的套餐ID列表
+     * @return 返回一个表示操作结果的成功消息
+     */
+    @PostMapping("/status/0")
+    public R<String> noSell(@RequestParam("ids") List<Long> ids) {
+        // 遍历每个套餐ID，更新其状态为停售
+        ids.forEach(id -> {
+            Setmeal setmeal = new Setmeal();
+            setmeal.setId(id);
+            setmeal.setStatus(0);
+            setmealService.updateById(setmeal);
+        });
+
+        // 返回成功消息，表示停售操作成功
+        return R.success("停售成功");
+    }
+
+    /**
+     * 启售操作的处理方法
+     * 该方法通过接收一个菜品ID列表，将这些菜品的状态更新为启售（状态码为1）
+     *
+     * @param ids 要进行启售操作的菜品ID列表
+     * @return 返回一个表示操作结果的成功响应
+     */
+    @PostMapping("/status/1")
+    public R<String> yesSell(@RequestParam("ids") List<Long> ids) {
+        // 遍历每个菜品ID，将其状态更新为启售
+        ids.forEach(id -> {
+            Setmeal setmeal = new Setmeal();
+            setmeal.setId(id);
+            setmeal.setStatus(1);
+            setmealService.updateById(setmeal);
+        });
+
+        // 返回成功响应，表示启售操作完成
+        return R.success("启售成功");
     }
 }
