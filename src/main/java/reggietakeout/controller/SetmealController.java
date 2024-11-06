@@ -184,9 +184,72 @@ public class SetmealController {
         });
 
         // 删除与套餐关联的所有菜品信息
-        setmealDishService.remove(new LambdaQueryWrapper<SetmealDish>().in(SetmealDish::getSetmealId, ids));
+        setmealDishService.remove(
+                new LambdaQueryWrapper<SetmealDish>()
+                        .in(SetmealDish::getSetmealId, ids));
 
         // 返回删除成功的响应
         return R.success("删除成功");
+    }
+
+    /**
+     * 根据ID获取套餐详细信息
+     *
+     * @param id 套餐的ID
+     * @return 返回包含套餐详细信息的响应对象
+     */
+    @GetMapping("{id}")
+    public R<SetmealDto> getById(@PathVariable Long id) {
+        // 根据ID获取套餐基本信息
+        Setmeal setmeal = setmealService.getById(id);
+
+        // 创建一个套餐DTO对象，用于返回套餐详细信息
+        SetmealDto setmealDto = new SetmealDto();
+
+        // 将套餐基本信息复制到DTO对象中
+        BeanUtils.copyProperties(setmeal, setmealDto);
+
+        // 根据套餐ID查询套餐包含的菜品
+        List<SetmealDish> setmealDishes = setmealDishService.selectBySetmealId(id);
+
+        // 将套餐包含的菜品设置到DTO对象中
+        setmealDto.setSetmealDishes(setmealDishes);
+
+        // 返回包含套餐详细信息的响应对象
+        return R.success(setmealDto);
+    }
+
+    /**
+     * 更新套餐信息
+     * <p>
+     * 该方法接收一个套餐信息对象（SetmealDto），并更新数据库中的相应记录
+     * 它首先删除现有的套餐菜品关联信息，然后更新套餐基本信息，最后重新插入更新后的套餐菜品关联信息
+     *
+     * @param setmealDto 套餐信息对象，包含要更新的套餐及其关联的菜品信息
+     * @return 返回一个表示操作结果的成功消息
+     */
+    @PutMapping()
+    @Transactional
+    public R<String> update(@RequestBody SetmealDto setmealDto) {
+        // 记录日志，输出修改的套餐信息
+        log.info("修改套餐信息，套餐信息：{}", setmealDto.toString());
+
+        // 删除现有的套餐菜品关联信息，以便后续重新插入更新后的信息
+        setmealDishService.remove(
+                new LambdaQueryWrapper<SetmealDish>()
+                        .eq(SetmealDish::getSetmealId, setmealDto.getId()));
+
+        // 创建一个新的套餐对象，并从传入的套餐信息对象中复制属性
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDto, setmeal);
+
+        // 更新数据库中的套餐信息
+        setmealService.updateById(setmeal);
+
+        // 插入更新后的套餐菜品关联信息
+        setmealDishService.insertSetmealDish(setmealDto);
+
+        // 返回成功消息
+        return R.success("修改成功");
     }
 }
