@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reggietakeout.common.R;
 import reggietakeout.dto.SetmealDto;
+import reggietakeout.entity.Category;
 import reggietakeout.entity.Setmeal;
 import reggietakeout.entity.SetmealDish;
 import reggietakeout.exception.SetmealIsSellingException;
+import reggietakeout.service.CategoryService;
 import reggietakeout.service.SetmealDishService;
 import reggietakeout.service.SetmealService;
 
@@ -25,6 +27,8 @@ public class SetmealController {
     private SetmealService setmealService;
     @Autowired
     private SetmealDishService setmealDishService;
+    @Autowired
+    private CategoryService categoryService;
 
     /**
      * 保存套餐信息
@@ -86,6 +90,10 @@ public class SetmealController {
                     List<SetmealDish> setmealDishes = setmealDishService.selectBySetmealId(setmeal.getId());
                     setmealDto.setSetmealDishes(setmealDishes);
 
+                    // 查询套餐所属分类信息
+                    Category category = categoryService.getById(setmeal.getCategoryId());
+                    setmealDto.setCategoryName(category.getName());
+
                     return setmealDto;
                 })
                 .toList();
@@ -145,23 +153,40 @@ public class SetmealController {
         return R.success("启售成功");
     }
 
+    /**
+     * 删除套餐信息
+     *
+     * @param ids 要删除的套餐ID列表
+     * @return 返回删除结果的响应
+     * <p>
+     * 此方法首先遍历每个套餐ID，检查其状态是否为正在售卖（状态码为1），
+     * 如果是，则抛出异常阻止删除操作。如果套餐不在售卖中，则进行删除操作。
+     * 最后，删除与这些套餐关联的所有菜品信息，并返回删除成功的响应。
+     */
     @DeleteMapping()
     @Transactional
     public R<String> delete(@RequestParam("ids") List<Long> ids) {
+        // 遍历每个套餐ID
         ids.forEach(id -> {
+            // 创建查询条件，根据套餐ID查询套餐信息
             LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(Setmeal::getId, id);
 
+            // 获取套餐的状态
             Integer status = setmealService.getOne(queryWrapper).getStatus();
 
+            // 检查套餐是否正在售卖，如果是，则抛出异常
             if (status == 1)
                 throw new SetmealIsSellingException("套餐正在售卖中，不能删除");
 
+            // 如果套餐不在售卖中，则进行删除操作
             setmealService.removeById(id);
         });
 
+        // 删除与套餐关联的所有菜品信息
         setmealDishService.remove(new LambdaQueryWrapper<SetmealDish>().in(SetmealDish::getSetmealId, ids));
 
+        // 返回删除成功的响应
         return R.success("删除成功");
     }
 }
