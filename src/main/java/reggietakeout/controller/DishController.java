@@ -135,6 +135,7 @@ public class DishController {
      * @return 返回一个表示操作结果的响应对象，包含操作是否成功和提示信息
      */
     @PutMapping()
+    @Transactional
     public R<String> update(@RequestBody DishDto dishDto) {
         // 记录日志，输出修改菜品的信息，便于调试和审计
         log.info("修改菜品信息：{}", dishDto);
@@ -209,5 +210,27 @@ public class DishController {
 
         // 返回成功响应，表示起售操作成功
         return R.success("起售成功");
+    }
+
+    /**
+     * 删除菜品及其对应口味信息
+     * <p>
+     * 通过传入的菜品ID列表，首先删除每个菜品对应的口味信息，然后批量删除菜品本身
+     * 此方法使用了事务注解，确保操作的原子性，即要么全部删除成功，要么全部不删，避免数据不一致
+     *
+     * @param ids 要删除的菜品ID列表
+     * @return 返回一个表示操作结果的响应对象，包含删除成功的消息
+     */
+    @DeleteMapping()
+    @Transactional
+    public R<String> delete(@RequestParam("ids") List<Long> ids) {
+        // 遍历菜品ID列表，删除每个菜品对应的口味信息
+        ids.forEach(id -> dishFlavorService.deleteByDishId(id));
+
+        // 批量删除菜品
+        dishService.removeBatchByIds(ids);
+
+        // 返回删除成功的响应
+        return R.success("删除成功");
     }
 }

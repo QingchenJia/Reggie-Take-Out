@@ -69,4 +69,20 @@ public class DishFlavorServiceImpl extends ServiceImpl<DishFlavorMapper, DishFla
         // 执行查询并返回结果列表
         return list(queryWrapper);
     }
+
+    /**
+     * 根据菜品ID删除对应的菜品口味
+     *
+     * @param dishId 菜品ID，用于定位要删除的菜品口味
+     */
+    @Override
+    public void deleteByDishId(Long dishId) {
+        // 创建一个新的Lambda查询包装器，用于构建查询条件
+        LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件为菜品ID等于传入的dishId，以定位要删除的菜品口味记录
+        queryWrapper.eq(DishFlavor::getDishId, dishId);
+
+        // 执行删除操作，remove方法根据queryWrapper定义的条件删除符合条件的记录
+        remove(queryWrapper);
+    }
 }

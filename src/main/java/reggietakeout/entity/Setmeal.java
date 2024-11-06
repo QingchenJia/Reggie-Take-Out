@@ -2,6 +2,7 @@ package reggietakeout.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -34,6 +35,6 @@ public class Setmeal implements Serializable {
     private Long createUser;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
+    @TableLogic(value = "0", delval = "1")
     private Integer isDeleted;
 }
-
