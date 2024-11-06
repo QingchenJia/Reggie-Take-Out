@@ -2,7 +2,9 @@ package reggietakeout.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import reggietakeout.dto.SetmealDto;
 import reggietakeout.entity.Setmeal;
 import reggietakeout.mapper.SetmealMapper;
 import reggietakeout.service.SetmealService;
@@ -27,5 +29,28 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
 
         // 使用Lambda查询包装器进行查询，并将结果转换为整数返回
         return (int) count(queryWrapper);
+    }
+
+    /**
+     * 插入套餐信息
+     * <p>
+     * 该方法接收一个套餐DTO（数据传输对象），将其属性复制到一个套餐实体对象中，
+     * 然后保存该实体对象到数据库，并返回生成的套餐ID
+     *
+     * @param setmealDto 套餐DTO，包含要插入的套餐的相关信息
+     * @return 插入成功后生成的套餐ID
+     */
+    @Override
+    public Long insertSetmeal(SetmealDto setmealDto) {
+        // 创建一个新的套餐实体对象
+        Setmeal setmeal = new Setmeal();
+        // 将套餐DTO中的属性复制到套餐实体对象中
+        BeanUtils.copyProperties(setmealDto, setmeal);
+
+        // 保存套餐实体对象到数据库
+        save(setmeal);
+
+        // 返回生成的套餐ID
+        return setmeal.getId();
     }
 }
