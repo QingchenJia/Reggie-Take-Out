@@ -1,5 +1,6 @@
 package reggietakeout.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -10,6 +11,7 @@ import reggietakeout.common.R;
 import reggietakeout.dto.SetmealDto;
 import reggietakeout.entity.Setmeal;
 import reggietakeout.entity.SetmealDish;
+import reggietakeout.exception.SetmealIsSellingException;
 import reggietakeout.service.SetmealDishService;
 import reggietakeout.service.SetmealService;
 
@@ -141,5 +143,25 @@ public class SetmealController {
 
         // 返回成功响应，表示启售操作完成
         return R.success("启售成功");
+    }
+
+    @DeleteMapping()
+    @Transactional
+    public R<String> delete(@RequestParam("ids") List<Long> ids) {
+        ids.forEach(id -> {
+            LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Setmeal::getId, id);
+
+            Integer status = setmealService.getOne(queryWrapper).getStatus();
+
+            if (status == 1)
+                throw new SetmealIsSellingException("套餐正在售卖中，不能删除");
+
+            setmealService.removeById(id);
+        });
+
+        setmealDishService.remove(new LambdaQueryWrapper<SetmealDish>().in(SetmealDish::getSetmealId, ids));
+
+        return R.success("删除成功");
     }
 }
