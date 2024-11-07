@@ -242,15 +242,32 @@ public class DishController {
      * @return 返回一个包含菜品列表的响应对象
      */
     @GetMapping("/list")
-    public R<List<Dish>> dishList(@RequestParam("categoryId") Long categoryId) {
+    public R<List<DishDto>> dishList(@RequestParam("categoryId") Long categoryId) {
         // 创建一个Lambda查询包装器，用于构建查询条件
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         // 设置查询条件，筛选出类别ID与传入参数相符的菜品
         queryWrapper.eq(Dish::getCategoryId, categoryId);
 
         // 调用业务服务层方法，获取符合条件的菜品列表
-        List<Dish> dishList = dishService.list(queryWrapper);
+        List<Dish> dishes = dishService.list(queryWrapper);
+
+        // 将查询到的菜品信息转换为DTO格式，便于前端使用
+        List<DishDto> dishDtos = dishes.stream().map(dish -> {
+            DishDto dishDto = new DishDto();
+            BeanUtils.copyProperties(dish, dishDto);
+
+            // 查询并设置当前菜品的口味信息
+            LambdaQueryWrapper<DishFlavor> queryWrapperDf = new LambdaQueryWrapper<>();
+            queryWrapperDf.eq(DishFlavor::getDishId, dish.getId());
+
+            List<DishFlavor> flavors = dishFlavorService.list(queryWrapperDf);
+
+            dishDto.setFlavors(flavors);
+
+            return dishDto;
+        }).toList();
+
         // 返回包含菜品列表的成功响应
-        return R.success(dishList);
+        return R.success(dishDtos);
     }
 }

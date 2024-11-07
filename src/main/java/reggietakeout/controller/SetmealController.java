@@ -252,4 +252,19 @@ public class SetmealController {
         // 返回成功消息
         return R.success("修改成功");
     }
+
+    @GetMapping("/list")
+    public R<List<Setmeal>> list(@RequestParam("categoryId") Long categoryId, @RequestParam("status") Integer status) {
+        LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Setmeal::getCategoryId, categoryId)
+                .eq(Setmeal::getStatus, status)
+                .orderByDesc(Setmeal::getUpdateTime);
+
+        return R.success(setmealService.list(queryWrapper));
+    }
+
+    @GetMapping("/dish/{id}")
+    public R<SetmealDto> viewSetmeal(@PathVariable Long id) {
+        return getById(id);
+    }
 }

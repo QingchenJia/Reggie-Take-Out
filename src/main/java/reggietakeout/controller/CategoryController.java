@@ -99,9 +99,9 @@ public class CategoryController {
      * @return 返回一个响应对象，包含根据类型筛选后的分类列表
      */
     @GetMapping("/list")
-    public R<List<Category>> list(@RequestParam("type") Integer type) {
-        // 调用服务层方法，根据类型获取分类列表
-        List<Category> categories = categoryService.selectByType(type);
+    public R<List<Category>> list(@RequestParam(value = "type", required = false) Integer type) {
+        // 根据类型是否为空，决定调用全部列表还是按类型筛选的列表
+        List<Category> categories = type == null ? categoryService.list() : categoryService.selectByType(type);
 
         // 返回成功响应，包含分类列表
         return R.success(categories);
