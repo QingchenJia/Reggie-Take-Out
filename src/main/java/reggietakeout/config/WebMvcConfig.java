@@ -71,7 +71,10 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
                         "/employee/login",
                         "/employee/logout",
                         "/backend/**",
-                        "/front/**"
+                        "/front/**",
+                        "/user/sendMsg",
+                        "/user/login",
+                        "/user/logout"
                 );
     }
 }
