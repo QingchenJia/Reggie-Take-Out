@@ -8,6 +8,7 @@ import reggietakeout.entity.Dish;
 import reggietakeout.entity.Employee;
 import reggietakeout.service.DishService;
 import reggietakeout.service.EmployeeService;
+import reggietakeout.utils.CaptchaUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -72,5 +73,11 @@ class ReggieTakeOutApplicationTests {
                 .map(id -> Long.parseLong(id))
                 .toList()
                 .forEach(System.out::println);
+    }
+
+    @Test
+    void testSmallMessageCodeGenerate() {
+        String s = CaptchaUtils.generateCaptcha();
+        System.out.println(s);
     }
 }
