@@ -98,4 +98,9 @@ class ReggieTakeOutApplicationTests {
 
         shoppingCartService.insertShoppingCart(shoppingCart);
     }
+
+    @Test
+    void testReduceShoppingCartNumber() {
+        shoppingCartService.deleteShoppingCart(1853439708533260290L, null, 1854447513386000385L);
+    }
 }
