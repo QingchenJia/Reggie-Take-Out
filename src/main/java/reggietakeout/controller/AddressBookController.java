@@ -1,6 +1,7 @@
 package reggietakeout.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -138,5 +139,15 @@ public class AddressBookController {
         addressBookService.removeById(id);
 
         return R.success("删除成功");
+    }
+
+    @GetMapping("/default")
+    public R<AddressBook> getDefault() {
+        LambdaUpdateWrapper<AddressBook> queryWrapper = new LambdaUpdateWrapper<>();
+        queryWrapper.eq(AddressBook::getUserId, BaseContext.getCurrentId())
+                .eq(AddressBook::getIsDefault, 1);
+
+        AddressBook addressBook = addressBookService.getOne(queryWrapper);
+        return R.success(addressBook);
     }
 }
