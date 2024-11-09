@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reggietakeout.entity.Dish;
 import reggietakeout.entity.Employee;
+import reggietakeout.entity.ShoppingCart;
 import reggietakeout.service.DishService;
 import reggietakeout.service.EmployeeService;
+import reggietakeout.service.ShoppingCartService;
 import reggietakeout.utils.CaptchaUtils;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +22,8 @@ class ReggieTakeOutApplicationTests {
     private EmployeeService employeeService;
     @Autowired
     private DishService dishService;
+    @Autowired
+    private ShoppingCartService shoppingCartService;
 
     @Test
     void contextLoads() {
@@ -79,5 +84,18 @@ class ReggieTakeOutApplicationTests {
     void testSmallMessageCodeGenerate() {
         String s = CaptchaUtils.generateCaptcha();
         System.out.println(s);
+    }
+
+    @Test
+    void testAddShoppingCartItem() {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        shoppingCart.setUserId(1854447513386000385L);
+        shoppingCart.setDishId(1853439708533260290L);
+        shoppingCart.setDishFlavor("少糖");
+        shoppingCart.setAmount(new BigDecimal(1500));
+        shoppingCart.setImage("85550581-d844-4c76-bf6c-0d890da8eb01.jpg");
+        shoppingCart.setName("程序员猫猫");
+
+        shoppingCartService.insertShoppingCart(shoppingCart);
     }
 }
