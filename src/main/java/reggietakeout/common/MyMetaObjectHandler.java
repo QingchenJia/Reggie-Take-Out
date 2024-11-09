@@ -16,11 +16,12 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         // 插入时填充 createTime 和 createUser
-        metaObject.setValue("createTime", LocalDateTime.now());
-        metaObject.setValue("createUser", BaseContext.getCurrentId());
+        setFieldIfPresent(metaObject, "createTime", LocalDateTime.now());
+        setFieldIfPresent(metaObject, "createUser", BaseContext.getCurrentId());
+
         // 同时填充 updateTime 和 updateUser，因为在插入时也是第一次更新
-        metaObject.setValue("updateTime", LocalDateTime.now());
-        metaObject.setValue("updateUser", BaseContext.getCurrentId());
+        setFieldIfPresent(metaObject, "updateTime", LocalDateTime.now());
+        setFieldIfPresent(metaObject, "updateUser", BaseContext.getCurrentId());
     }
 
     /**
@@ -35,8 +36,23 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         // 更新时填充 updateTime 和 updateUser
-        metaObject.setValue("updateTime", LocalDateTime.now());
-        metaObject.setValue("updateUser", BaseContext.getCurrentId());
+        setFieldIfPresent(metaObject, "updateTime", LocalDateTime.now());
+        setFieldIfPresent(metaObject, "updateUser", BaseContext.getCurrentId());
+    }
+
+    /**
+     * 如果字段存在，则设置该字段的值
+     * 此方法用于在反射操作中，仅当字段存在时才更新字段值，避免引发字段不存在的异常
+     *
+     * @param metaObject MetaObject封装了对对象的反射操作，提供统一的属性访问接口
+     * @param fieldName  需要设置的字段名称
+     * @param value      要为字段设置的值
+     */
+    private void setFieldIfPresent(MetaObject metaObject, String fieldName, Object value) {
+        // 检查字段是否存在并进行填充
+        if (metaObject.hasSetter(fieldName)) {
+            metaObject.setValue(fieldName, value);
+        }
     }
 }
 
