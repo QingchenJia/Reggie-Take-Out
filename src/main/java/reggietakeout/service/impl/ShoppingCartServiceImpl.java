@@ -7,6 +7,8 @@ import reggietakeout.entity.ShoppingCart;
 import reggietakeout.mapper.ShoppingCartMapper;
 import reggietakeout.service.ShoppingCartService;
 
+import java.util.List;
+
 @Service
 public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, ShoppingCart> implements ShoppingCartService {
     /**
@@ -73,5 +75,38 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
             shoppingCartdb.setNumber(number);
             updateById(shoppingCartdb);
         }
+    }
+
+    /**
+     * 根据用户ID删除购物车信息
+     *
+     * @param userId 用户ID，用于标识需要删除的购物车信息的用户
+     */
+    @Override
+    public void deleteByUserId(Long userId) {
+        // 创建Lambda查询包装器，用于构建查询条件
+        LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件，根据用户ID进行等值查询
+        queryWrapper.eq(ShoppingCart::getUserId, userId);
+
+        // 执行删除操作，传入查询条件
+        remove(queryWrapper);
+    }
+
+    /**
+     * 根据用户ID选择购物车列表
+     *
+     * @param userId 用户ID，用于查询与用户关联的购物车信息
+     * @return 返回与用户ID关联的购物车列表
+     */
+    @Override
+    public List<ShoppingCart> selectByUserId(Long userId) {
+        // 创建Lambda查询包装器，用于构建查询条件
+        LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件，等同于SQL中的WHERE user_id = ?
+        queryWrapper.eq(ShoppingCart::getUserId, userId);
+
+        // 执行查询并返回结果列表
+        return list(queryWrapper);
     }
 }

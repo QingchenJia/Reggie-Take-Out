@@ -1,15 +1,13 @@
 package reggietakeout;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import reggietakeout.entity.Dish;
-import reggietakeout.entity.Employee;
-import reggietakeout.entity.ShoppingCart;
-import reggietakeout.service.DishService;
-import reggietakeout.service.EmployeeService;
-import reggietakeout.service.ShoppingCartService;
+import reggietakeout.entity.*;
+import reggietakeout.service.*;
 import reggietakeout.utils.CaptchaUtils;
 
 import java.math.BigDecimal;
@@ -17,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SpringBootTest
+@Slf4j
 class ReggieTakeOutApplicationTests {
     @Autowired
     private EmployeeService employeeService;
@@ -24,6 +23,12 @@ class ReggieTakeOutApplicationTests {
     private DishService dishService;
     @Autowired
     private ShoppingCartService shoppingCartService;
+    @Autowired
+    private AddressBookService addressBookService;
+    @Autowired
+    private OrdersService ordersService;
+    @Autowired
+    private OrderDetailService orderDetailService;
 
     @Test
     void contextLoads() {
@@ -74,10 +79,7 @@ class ReggieTakeOutApplicationTests {
 
     @Test
     void testString2LongList() {
-        Arrays.stream("1853439708533260290,1413385247889891330,1413342036832100354,1413384757047271425".split(","))
-                .map(id -> Long.parseLong(id))
-                .toList()
-                .forEach(System.out::println);
+        Arrays.stream("1853439708533260290,1413385247889891330,1413342036832100354,1413384757047271425".split(",")).map(id -> Long.parseLong(id)).toList().forEach(System.out::println);
     }
 
     @Test
@@ -102,5 +104,53 @@ class ReggieTakeOutApplicationTests {
     @Test
     void testReduceShoppingCartNumber() {
         shoppingCartService.deleteShoppingCart(1853439708533260290L, null, 1854447513386000385L);
+    }
+
+    @Test
+    void testOrdersSubmit() {
+        Orders orders = new Orders();
+        orders.setAddressBookId(1417414526093082626L);
+        orders.setPayMethod(1);
+        orders.setRemark("记得下次继续点我呀");
+
+        // 记录用户下单日志
+        log.info("用户下单：{}", orders);
+
+        // 获取当前用户ID
+        Long userId = 1854447513386000385L;
+        // 根据用户选择的地址簿ID获取地址簿信息
+        AddressBook addressBook = addressBookService.getById(orders.getAddressBookId());
+
+        // 获取当前用户购物车中的所有商品
+        List<ShoppingCart> shoppingCarts = shoppingCartService.selectByUserId(userId);
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        // 将购物车中的商品转换为订单详情列表
+        List<OrderDetail> orderDetails = shoppingCarts.stream().map(shoppingCart -> {
+            // 创建一个新的订单详情对象
+            OrderDetail orderDetail = new OrderDetail();
+            // 将购物车中的商品信息复制到订单详情中，但不包括ID
+            BeanUtils.copyProperties(shoppingCart, orderDetail, "id");
+
+            return orderDetail;
+        }).toList();
+
+        for (OrderDetail orderDetail : orderDetails) {
+            totalAmount = totalAmount.add(orderDetail.getAmount().multiply(BigDecimal.valueOf(orderDetail.getNumber())));
+        }
+
+        orders.setAmount(totalAmount);
+
+        // 插入订单，返回订单ID
+        Long orderId = ordersService.insertOrders(orders, addressBook);
+
+        orderDetails.forEach(orderDetail -> orderDetail.setOrderId(orderId));
+
+        // 批量保存订单详情
+        orderDetailService.saveBatch(orderDetails);
+
+        // 用户下单后，清空购物车
+        shoppingCartService.deleteByUserId(userId);
     }
 }
