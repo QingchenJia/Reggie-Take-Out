@@ -1,5 +1,7 @@
 package reggietakeout.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import reggietakeout.common.BaseContext;
@@ -26,7 +28,6 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     @Override
     public Long insertOrders(Orders orders, AddressBook addressBook) {
         // 构建订单对象，设置收货信息和用户ID，以及订单时间和结算时间
-
         orders.setPhone(addressBook.getPhone()); // 设置收货电话
         orders.setAddress(addressBook.getDetail()); // 设置收货地址详情
         orders.setConsignee(addressBook.getConsignee()); // 设置收货人
@@ -39,5 +40,18 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
 
         // 返回新插入订单的ID
         return orders.getId();
+    }
+
+    @Override
+    public Page<Orders> selectPage(Page<Orders> pageInfo) {
+        // 创建一个LambdaQueryWrapper对象，用于构建查询条件
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件，根据当前用户的ID查询订单
+        queryWrapper.eq(Orders::getUserId, BaseContext.getCurrentId());
+
+        // 调用ordersService的page方法执行分页查询
+        page(pageInfo, queryWrapper);
+
+        return pageInfo;
     }
 }

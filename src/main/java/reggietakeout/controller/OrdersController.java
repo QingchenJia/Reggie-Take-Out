@@ -1,15 +1,14 @@
 package reggietakeout.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reggietakeout.common.BaseContext;
 import reggietakeout.common.R;
+import reggietakeout.dto.OrdersDto;
 import reggietakeout.entity.AddressBook;
 import reggietakeout.entity.OrderDetail;
 import reggietakeout.entity.Orders;
@@ -92,5 +91,50 @@ public class OrdersController {
         shoppingCartService.deleteByUserId(userId);
         // 返回成功消息
         return R.success("下单成功");
+    }
+
+    /**
+     * 处理用户页面的分页查询请求
+     *
+     * @param page     当前页码，用于指定从哪一页开始查询
+     * @param pageSize 每页记录数，用于限制每页显示的数据量
+     * @return 返回一个封装了分页信息的对象，包含订单数据
+     */
+    @GetMapping("/userPage")
+    public R<Page<OrdersDto>> page(int page, int pageSize) {
+        // 创建一个Page对象，用于存储分页查询的结果
+        Page<Orders> pageInfo = new Page<>(page, pageSize);
+
+        // 调用服务层方法执行分页查询
+        ordersService.selectPage(pageInfo);
+
+        // 获取查询结果中的订单记录列表
+        List<Orders> orderss = pageInfo.getRecords();
+
+        // 将订单记录转换为DTO形式，并关联查询订单详情
+        List<OrdersDto> ordersDtos = orderss.stream()
+                .map(orders -> {
+                    OrdersDto ordersDto = new OrdersDto();
+                    BeanUtils.copyProperties(orders, ordersDto);
+
+                    // 根据订单ID查询订单详情
+                    Long ordersId = orders.getId();
+                    List<OrderDetail> orderDetails = orderDetailService.selectByOrderId(ordersId);
+
+                    ordersDto.setOrderDetails(orderDetails);
+
+                    return ordersDto;
+                })
+                .toList();
+
+        // 创建一个新的Page对象用于存储转换后的DTO数据
+        Page<OrdersDto> pageResult = new Page<>();
+        BeanUtils.copyProperties(pageInfo, pageResult, "records");
+
+        // 设置转换后的订单DTO列表到分页对象中
+        pageResult.setRecords(ordersDtos);
+
+        // 返回查询结果，封装在R对象中表示成功
+        return R.success(pageResult);
     }
 }
