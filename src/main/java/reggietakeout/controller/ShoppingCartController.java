@@ -1,7 +1,5 @@
 package reggietakeout.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,22 +21,15 @@ public class ShoppingCartController {
     /**
      * 获取当前用户的购物车列表
      * <p>
-     * 此方法首先获取当前用户的ID，然后构造查询条件，查询该用户的所有购物车项
-     * 使用LambdaQueryWrapper来构建查询条件，以确保查询结果仅限于当前用户
+     * 此方法通过GET请求获取当前用户的购物车信息列表它首先确定当前用户的身份，
+     * 然后调用shoppingCartService中的selectByUserId方法来选择属于当前用户的所有购物车项
+     * 使用了R类来封装返回结果，以提供更丰富的响应信息
      *
-     * @return 返回一个响应对象，包含用户购物车列表的成功查询结果
+     * @return 返回一个封装了购物车列表的R对象，表示操作的结果以及购物车数据
      */
     @GetMapping("/list")
     public R<List<ShoppingCart>> list() {
-        // 获取当前用户的ID
-        Long userId = BaseContext.getCurrentId();
-
-        // 构造查询条件，用于查询当前用户的所有购物车项
-        LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ShoppingCart::getUserId, userId);
-
-        // 查询用户购物车列表并返回成功响应
-        return R.success(shoppingCartService.list(queryWrapper));
+        return R.success(shoppingCartService.selectByUserId(BaseContext.getCurrentId()));
     }
 
     /**
@@ -87,23 +78,15 @@ public class ShoppingCartController {
     }
 
     /**
-     * 清空当前用户的购物车
-     * <p>
-     * 该方法通过删除当前用户在购物车中的所有商品来实现清空购物车的功能
-     * 它首先创建一个LambdaUpdateWrapper对象，用于构建更新条件，然后设置更新条件为用户ID等于当前用户的ID
-     * 最后调用shoppingCartService的remove方法，根据更新条件删除购物车中的商品
+     * 处理清空购物车的请求
+     * 该方法使用DELETE HTTP请求来清空当前用户的所有购物车商品
      *
-     * @return 返回一个R对象，表示操作结果如果成功，将返回成功信息和HTTP状态码200
+     * @return 返回一个表示操作结果的响应对象，包含成功消息
      */
     @DeleteMapping("/clean")
     public R<String> clean() {
-        // 创建LambdaUpdateWrapper对象，用于构建更新条件
-        LambdaUpdateWrapper<ShoppingCart> updateWrapper = new LambdaUpdateWrapper<>();
-        // 设置更新条件为用户ID等于当前用户的ID
-        updateWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
-
-        // 根据更新条件删除购物车中的商品
-        shoppingCartService.remove(updateWrapper);
+        // 根据当前用户ID删除购物车中的所有商品
+        shoppingCartService.deleteByUserId(BaseContext.getCurrentId());
 
         // 返回成功信息
         return R.success("清空购物车成功");
