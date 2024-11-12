@@ -27,7 +27,7 @@ public class UserController {
      * 验证码通过日志记录，并存储在当前会话中，与用户的电话号码关联
      *
      * @param request HttpServletRequest对象，用于存储验证码到会话中
-     * @param map 包含用户信息（如电话号码）的Map对象
+     * @param map     包含用户信息（如电话号码）的Map对象
      * @return 返回一个封装了验证码的响应对象
      */
     @PostMapping("/sendMsg")
@@ -49,7 +49,7 @@ public class UserController {
      * 处理用户登录请求
      *
      * @param request HTTP请求对象，用于获取会话属性和设置会话属性
-     * @param map 包含用户登录信息的映射，包括电话号码和验证码
+     * @param map     包含用户登录信息的映射，包括电话号码和验证码
      * @return 返回一个封装了登录结果的响应对象
      */
     @PostMapping("/login")
@@ -74,5 +74,20 @@ public class UserController {
         request.getSession().setAttribute("user", user.getId());
         // 返回成功信息，包含用户信息
         return R.success(user);
+    }
+
+    /**
+     * 处理用户登出请求的控制器方法
+     * <p>
+     * 该方法通过HTTP POST请求来处理用户的登出操作它首先从当前请求的会话中移除"user"属性，
+     * 以清除用户的相关信息，从而实现用户登出的功能
+     *
+     * @param request HttpServletRequest对象，用于获取当前请求的会话信息
+     * @return 返回一个表示操作结果的R对象，包含一个表示成功登出的消息
+     */
+    @PostMapping("/loginout")
+    public R<String> logout(HttpServletRequest request) {
+        request.getSession().removeAttribute("user");
+        return R.success("退出成功");
     }
 }
