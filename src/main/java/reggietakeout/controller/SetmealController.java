@@ -154,26 +154,19 @@ public class SetmealController {
     }
 
     /**
-     * 删除套餐信息
+     * 处理删除套餐的请求，支持批量删除
+     * 该方法使用了DeleteMapping注解来处理HTTP DELETE请求，并使用Transactional注解确保操作的原子性
      *
-     * @param ids 要删除的套餐ID列表
-     * @return 返回删除结果的响应
-     * <p>
-     * 此方法首先遍历每个套餐ID，检查其状态是否为正在售卖（状态码为1），
-     * 如果是，则抛出异常阻止删除操作。如果套餐不在售卖中，则进行删除操作。
-     * 最后，删除与这些套餐关联的所有菜品信息，并返回删除成功的响应。
+     * @param ids 要删除的套餐ID列表，通过请求参数传递
+     * @return 返回一个表示操作结果的响应对象
      */
     @DeleteMapping()
     @Transactional
     public R<String> delete(@RequestParam("ids") List<Long> ids) {
         // 遍历每个套餐ID
         ids.forEach(id -> {
-            // 创建查询条件，根据套餐ID查询套餐信息
-            LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Setmeal::getId, id);
-
             // 获取套餐的状态
-            Integer status = setmealService.getOne(queryWrapper).getStatus();
+            Integer status = setmealService.getById(id).getStatus();
 
             // 检查套餐是否正在售卖，如果是，则抛出异常
             if (status == 1)
@@ -255,14 +248,17 @@ public class SetmealController {
 
     @GetMapping("/list")
     public R<List<Setmeal>> list(@RequestParam("categoryId") Long categoryId, @RequestParam("status") Integer status) {
-        LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Setmeal::getCategoryId, categoryId)
-                .eq(Setmeal::getStatus, status)
-                .orderByDesc(Setmeal::getUpdateTime);
-
-        return R.success(setmealService.list(queryWrapper));
+        return R.success(setmealService.selectByCategoryId(categoryId, status));
     }
 
+    /**
+     * 根据菜品ID获取菜品详情
+     * 此方法使用GET请求来获取特定菜品的详细信息，包括菜品的描述、价格、图片等
+     *
+     * @param id 菜品的唯一标识符，用于查询特定菜品的信息
+     * @return 返回一个SetmealDto对象，包含了菜品的详细信息如果找不到对应的菜品，
+     * 则返回null或相应的错误信息
+     */
     @GetMapping("/dish/{id}")
     public R<SetmealDto> viewSetmeal(@PathVariable Long id) {
         return getById(id);

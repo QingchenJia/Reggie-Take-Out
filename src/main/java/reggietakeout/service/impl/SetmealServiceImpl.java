@@ -11,6 +11,8 @@ import reggietakeout.entity.Setmeal;
 import reggietakeout.mapper.SetmealMapper;
 import reggietakeout.service.SetmealService;
 
+import java.util.List;
+
 @Service
 public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> implements SetmealService {
     /**
@@ -60,7 +62,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
      * 根据名称查询套餐信息，并按照更新时间降序排列
      *
      * @param pageInfo 分页信息，包含当前页码和每页记录数
-     * @param name 套餐名称，用于模糊查询
+     * @param name     套餐名称，用于模糊查询
      * @return 返回填充了套餐信息的分页对象
      */
     @Override
@@ -77,5 +79,25 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
 
         // 返回填充了查询结果的分页信息对象
         return pageInfo;
+    }
+
+    /**
+     * 根据类别ID和状态选择套餐列表
+     *
+     * @param categoryId 类别ID，用于筛选特定类别的套餐
+     * @param status 套餐状态，用于筛选特定状态的套餐
+     * @return 返回符合条件的套餐列表
+     */
+    @Override
+    public List<Setmeal> selectByCategoryId(Long categoryId, Integer status) {
+        // 创建一个Lambda查询包装器，用于构建查询条件和排序
+        LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
+        // 添加查询条件，按类别ID和状态筛选，并按更新时间降序排序
+        queryWrapper.eq(Setmeal::getCategoryId, categoryId)
+                .eq(Setmeal::getStatus, status)
+                .orderByDesc(Setmeal::getUpdateTime);
+
+        // 执行查询并返回结果列表
+        return list(queryWrapper);
     }
 }

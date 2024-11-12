@@ -1,6 +1,5 @@
 package reggietakeout.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -15,7 +14,6 @@ import reggietakeout.service.CategoryService;
 import reggietakeout.service.DishFlavorService;
 import reggietakeout.service.DishService;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -164,12 +162,9 @@ public class DishController {
      * @return 返回一个表示操作成功的响应对象
      */
     @PostMapping("/status/0")
-    public R<String> noSell(@RequestParam("ids") String ids) {
+    public R<String> noSell(@RequestParam("ids") List<Long> ids) {
         // 将输入的字符串按逗号分割，并转换为Long型的ID列表
-        Arrays.stream(ids.split(","))
-                .map(Long::parseLong)
-                .toList()
-                .stream()
+        ids.stream()
                 // 创建Dish对象，设置ID和状态为0（表示停止销售）
                 .map(id -> {
                             Dish dish = new Dish();
@@ -193,12 +188,9 @@ public class DishController {
      * @return 返回一个表示操作结果的响应对象
      */
     @PostMapping("/status/1")
-    public R<String> yesSell(@RequestParam("ids") String ids) {
+    public R<String> yesSell(@RequestParam("ids") List<Long> ids) {
         // 将传入的ID字符串按逗号分割，并转换为Long类型，创建Dish对象，设置其ID和状态，然后调用更新方法
-        Arrays.stream(ids.split(","))
-                .map(Long::parseLong)
-                .toList()
-                .stream()
+        ids.stream()
                 .map(id -> {
                             // 创建一个新的Dish对象，并设置其ID和状态为0（起售状态）
                             Dish dish = new Dish();
@@ -238,36 +230,32 @@ public class DishController {
     /**
      * 根据类别ID获取菜品列表
      *
-     * @param categoryId 类别ID，用于筛选具有相同类别的菜品
-     * @return 返回一个包含菜品列表的响应对象
+     * @param categoryId 类别ID，用于筛选菜品
+     * @return 返回一个响应对象，包含菜品DTO列表
      */
     @GetMapping("/list")
     public R<List<DishDto>> dishList(@RequestParam("categoryId") Long categoryId) {
-        // 创建一个Lambda查询包装器，用于构建查询条件
-        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-        // 设置查询条件，筛选出类别ID与传入参数相符的菜品
-        queryWrapper.eq(Dish::getCategoryId, categoryId);
+        // 根据类别ID查询菜品列表
+        List<Dish> dishes = dishService.selectByCategoryId(categoryId);
 
-        // 调用业务服务层方法，获取符合条件的菜品列表
-        List<Dish> dishes = dishService.list(queryWrapper);
-
-        // 将查询到的菜品信息转换为DTO格式，便于前端使用
+        // 将菜品列表转换为菜品DTO列表，以便返回更丰富的数据结构
         List<DishDto> dishDtos = dishes.stream().map(dish -> {
+            // 创建一个新的菜品DTO对象
             DishDto dishDto = new DishDto();
+            // 将菜品对象的属性复制到菜品DTO对象中
             BeanUtils.copyProperties(dish, dishDto);
 
-            // 查询并设置当前菜品的口味信息
-            LambdaQueryWrapper<DishFlavor> queryWrapperDf = new LambdaQueryWrapper<>();
-            queryWrapperDf.eq(DishFlavor::getDishId, dish.getId());
+            // 根据菜品ID查询对应的口味列表
+            List<DishFlavor> flavors = dishFlavorService.selectByDishId(dish.getId());
 
-            List<DishFlavor> flavors = dishFlavorService.list(queryWrapperDf);
-
+            // 将口味列表设置到菜品DTO对象中
             dishDto.setFlavors(flavors);
 
+            // 返回构建好的菜品DTO对象
             return dishDto;
         }).toList();
 
-        // 返回包含菜品列表的成功响应
+        // 返回包含菜品DTO列表的成功响应
         return R.success(dishDtos);
     }
 }

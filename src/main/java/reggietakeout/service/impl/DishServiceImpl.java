@@ -9,6 +9,8 @@ import reggietakeout.entity.Dish;
 import reggietakeout.mapper.DishMapper;
 import reggietakeout.service.DishService;
 
+import java.util.List;
+
 @Service
 public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements DishService {
     /**
@@ -68,5 +70,22 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
         // 执行查询并返回唯一的一条记录，如果没有记录则返回null
         return getOne(queryWrapper);
+    }
+
+    /**
+     * 根据类别ID选择菜品列表
+     *
+     * @param categoryId 类别ID，用于筛选具有相同类别的菜品
+     * @return 返回符合条件的菜品列表
+     */
+    @Override
+    public List<Dish> selectByCategoryId(Long categoryId) {
+        // 创建Lambda查询包装器，用于条件查询
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        // 设置查询条件：根据类别ID进行匹配
+        queryWrapper.eq(Dish::getCategoryId, categoryId);
+
+        // 执行查询并返回结果列表
+        return list(queryWrapper);
     }
 }
