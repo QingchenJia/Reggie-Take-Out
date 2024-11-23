@@ -6,6 +6,11 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: jqc004118
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
 
 server:
   port: 9110

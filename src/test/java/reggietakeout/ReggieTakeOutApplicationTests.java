@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import reggietakeout.entity.*;
 import reggietakeout.service.*;
 import reggietakeout.utils.CaptchaUtils;
@@ -29,6 +31,9 @@ class ReggieTakeOutApplicationTests {
     private OrdersService ordersService;
     @Autowired
     private OrderDetailService orderDetailService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Test
     void contextLoads() {
@@ -152,5 +157,12 @@ class ReggieTakeOutApplicationTests {
 
         // 用户下单后，清空购物车
         shoppingCartService.deleteByUserId(userId);
+    }
+
+    @Test
+    void testRedisUse() {
+        ValueOperations value = redisTemplate.opsForValue();
+        value.set("name", "eric");
+        System.out.println(value.get("name"));
     }
 }
