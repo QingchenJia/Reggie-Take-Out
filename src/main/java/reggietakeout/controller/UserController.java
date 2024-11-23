@@ -3,6 +3,7 @@ package reggietakeout.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +14,14 @@ import reggietakeout.service.UserService;
 import reggietakeout.utils.CaptchaUtils;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @Slf4j
 @RequestMapping("/user")
 public class UserController {
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Autowired
     private UserService userService;
 
@@ -38,9 +42,8 @@ public class UserController {
         String code = CaptchaUtils.generateCaptcha();
         // 记录日志，方便调试和审计
         log.info("验证码：{}", code);
-
-        // 将验证码存储在会话中，以便后续验证
-        request.getSession().setAttribute(phone, code);
+        // 将验证码与电话号码关联，存储到Redis中，有效期为5分钟
+        redisTemplate.opsForValue().set(phone, code, 5, TimeUnit.MINUTES);
         // 返回成功响应，携带生成的验证码
         return R.success(code);
     }
@@ -58,9 +61,12 @@ public class UserController {
         String phone = (String) map.get("phone");
         String code = (String) map.get("code");
 
-        // 验证用户输入的验证码是否与会话中保存的验证码匹配
-        if (!request.getSession().getAttribute(phone).equals(code))
-            // 如果验证码不匹配，返回错误信息
+        // 检查Redis中是否存在该电话号码对应的验证码，如果不存在，验证已超时
+        if (redisTemplate.opsForValue().get(phone) == null)
+            return R.error("验证超时");
+
+        // 比较用户输入的验证码和Redis中存储的验证码是否一致，如果不一致，则返回验证码错误信息
+        if (!redisTemplate.opsForValue().get(phone).equals(code))
             return R.error("验证码错误");
 
         // 调用用户服务，根据电话号码插入或获取用户信息
