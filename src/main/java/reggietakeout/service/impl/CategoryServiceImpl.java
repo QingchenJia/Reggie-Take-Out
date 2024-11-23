@@ -6,8 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reggietakeout.entity.Category;
-import reggietakeout.exception.CategoryNotEmpty;
-import reggietakeout.exception.NameRepeatException;
+import reggietakeout.exception.CustomException;
 import reggietakeout.mapper.CategoryMapper;
 import reggietakeout.service.CategoryService;
 import reggietakeout.service.DishService;
@@ -29,7 +28,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      * 如果不存在，则将该分类保存到数据库中
      *
      * @param category 要插入的分类对象
-     * @throws NameRepeatException 如果分类名称已存在
+     * @throws CustomException 如果分类名称已存在
      */
     @Override
     public void insert(Category category) {
@@ -38,7 +37,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         // 检查分类名称是否已存在，如果存在则抛出异常
         if (selectByName(name) != null)
-            throw new NameRepeatException("分类名称已存在");
+            throw new CustomException("分类名称已存在");
 
         // 保存分类到数据库
         save(category);
@@ -97,7 +96,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      * 如果没有关联，则调用removeById方法进行删除操作
      *
      * @param id 待删除的类别ID
-     * @throws CategoryNotEmpty 当尝试删除的类别有关联的菜品或套餐时抛出此异常
+     * @throws CustomException 当尝试删除的类别有关联的菜品或套餐时抛出此异常
      */
     @Override
     public void deleteById(Long id) {
@@ -108,7 +107,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         // 如果类别下存在菜品或套餐，则抛出异常，防止删除类别
         if (dishCount > 0 || setmealCount > 0)
-            throw new CategoryNotEmpty("当前分类关联了菜品或套餐，无法删除");
+            throw new CustomException("当前分类关联了菜品或套餐，无法删除");
 
         // 如果类别下没有菜品或套餐，则执行删除操作
         removeById(id);

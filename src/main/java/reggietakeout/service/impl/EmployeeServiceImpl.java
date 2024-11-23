@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import reggietakeout.entity.Employee;
-import reggietakeout.exception.UsernameRepeatException;
+import reggietakeout.exception.CustomException;
 import reggietakeout.mapper.EmployeeMapper;
 import reggietakeout.service.EmployeeService;
 
@@ -44,7 +44,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
 
         // 检查用户名是否已存在，如果存在则抛出异常
         if (selectByUsername(username) != null)
-            throw new UsernameRepeatException("用户名已存在");
+            throw new CustomException("用户名已存在");
 
         // 设置员工初始状态为1，表示该员工账户是激活的
         employee.setStatus(1);

@@ -12,7 +12,7 @@ import reggietakeout.dto.SetmealDto;
 import reggietakeout.entity.Category;
 import reggietakeout.entity.Setmeal;
 import reggietakeout.entity.SetmealDish;
-import reggietakeout.exception.SetmealIsSellingException;
+import reggietakeout.exception.CustomException;
 import reggietakeout.service.CategoryService;
 import reggietakeout.service.SetmealDishService;
 import reggietakeout.service.SetmealService;
@@ -170,7 +170,7 @@ public class SetmealController {
 
             // 检查套餐是否正在售卖，如果是，则抛出异常
             if (status == 1)
-                throw new SetmealIsSellingException("套餐正在售卖中，不能删除");
+                throw new CustomException("套餐正在售卖中，不能删除");
 
             // 如果套餐不在售卖中，则进行删除操作
             setmealService.removeById(id);
