@@ -231,29 +231,34 @@ public class DishController {
      * 根据类别ID获取菜品列表
      *
      * @param categoryId 类别ID，用于筛选菜品
+     * @param status     菜品状态，用于筛选菜品
      * @return 返回一个响应对象，包含菜品DTO列表
      */
     @GetMapping("/list")
-    public R<List<DishDto>> dishList(@RequestParam("categoryId") Long categoryId) {
+    public R<List<DishDto>> dishList(@RequestParam("categoryId") Long categoryId, @RequestParam("status") Integer status) {
         // 根据类别ID查询菜品列表
         List<Dish> dishes = dishService.selectByCategoryId(categoryId);
 
         // 将菜品列表转换为菜品DTO列表，以便返回更丰富的数据结构
-        List<DishDto> dishDtos = dishes.stream().map(dish -> {
-            // 创建一个新的菜品DTO对象
-            DishDto dishDto = new DishDto();
-            // 将菜品对象的属性复制到菜品DTO对象中
-            BeanUtils.copyProperties(dish, dishDto);
+        List<DishDto> dishDtos = dishes.stream()
+                // 过滤出符合指定状态的菜品
+                .filter(dish -> dish.getStatus() == status)
+                // 将菜品对象转换为菜品DTO对象
+                .map(dish -> {
+                    // 创建一个新的菜品DTO对象
+                    DishDto dishDto = new DishDto();
+                    // 将菜品对象的属性复制到菜品DTO对象中
+                    BeanUtils.copyProperties(dish, dishDto);
 
-            // 根据菜品ID查询对应的口味列表
-            List<DishFlavor> flavors = dishFlavorService.selectByDishId(dish.getId());
+                    // 根据菜品ID查询对应的口味列表
+                    List<DishFlavor> flavors = dishFlavorService.selectByDishId(dish.getId());
 
-            // 将口味列表设置到菜品DTO对象中
-            dishDto.setFlavors(flavors);
+                    // 将口味列表设置到菜品DTO对象中
+                    dishDto.setFlavors(flavors);
 
-            // 返回构建好的菜品DTO对象
-            return dishDto;
-        }).toList();
+                    // 返回构建好的菜品DTO对象
+                    return dishDto;
+                }).toList();
 
         // 返回包含菜品DTO列表的成功响应
         return R.success(dishDtos);
