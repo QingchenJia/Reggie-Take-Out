@@ -19,6 +19,7 @@ import reggietakeout.service.SetmealDishService;
 import reggietakeout.service.SetmealService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SetmealController {
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private SetmealService setmealService;
     @Autowired
@@ -58,6 +59,9 @@ public class SetmealController {
 
         // 保存与套餐关联的菜品信息到数据库
         setmealDishService.insertSetmealDish(setmealDto);
+
+        // 删除Redis中缓存的套餐数据，以保持数据一致性
+        redisTemplate.delete("setmeal_" + setmealDto.getCategoryId() + "_1");
 
         // 返回表示操作成功的响应对象
         return R.success("新增套餐成功");
@@ -132,6 +136,10 @@ public class SetmealController {
             setmealService.updateById(setmeal);
         });
 
+        // 清除Redis中与套餐相关的缓存，确保数据一致性
+        Set<String> setmealKeys = redisTemplate.keys("setmeal_*");
+        redisTemplate.delete(setmealKeys);
+
         // 返回成功消息，表示停售操作成功
         return R.success("停售成功");
     }
@@ -152,6 +160,10 @@ public class SetmealController {
             setmeal.setStatus(1);
             setmealService.updateById(setmeal);
         });
+
+        // 清除Redis中与套餐相关的缓存，确保数据一致性
+        Set<String> setmealKeys = redisTemplate.keys("setmeal_*");
+        redisTemplate.delete(setmealKeys);
 
         // 返回成功响应，表示启售操作完成
         return R.success("启售成功");
@@ -184,6 +196,10 @@ public class SetmealController {
         setmealDishService.remove(
                 new LambdaQueryWrapper<SetmealDish>()
                         .in(SetmealDish::getSetmealId, ids));
+
+        // 清除Redis中与套餐相关的缓存，确保数据一致性
+        Set<String> setmealKeys = redisTemplate.keys("setmeal_*");
+        redisTemplate.delete(setmealKeys);
 
         // 返回删除成功的响应
         return R.success("删除成功");
@@ -246,6 +262,9 @@ public class SetmealController {
         // 插入更新后的套餐菜品关联信息
         setmealDishService.insertSetmealDish(setmealDto);
 
+        // 删除Redis中缓存的套餐数据，以保持数据一致性
+        redisTemplate.delete("setmeal_" + setmealDto.getCategoryId() + "_1");
+
         // 返回成功消息
         return R.success("修改成功");
     }
@@ -255,7 +274,7 @@ public class SetmealController {
      * 首先尝试从Redis缓存中获取数据，如果缓存不存在，则从数据库中查询，并将结果缓存到Redis中
      *
      * @param categoryId 类别ID，用于筛选套餐类别
-     * @param status 套餐状态，通常表示是否可用
+     * @param status     套餐状态，通常表示是否可用
      * @return 返回一个包含套餐列表的响应对象
      */
     @GetMapping("/list")

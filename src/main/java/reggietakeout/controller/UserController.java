@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/user")
 public class UserController {
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private UserService userService;
 

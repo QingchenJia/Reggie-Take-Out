@@ -16,6 +16,7 @@ import reggietakeout.service.DishFlavorService;
 import reggietakeout.service.DishService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DishController {
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private DishService dishService;
     @Autowired
@@ -50,6 +51,9 @@ public class DishController {
         dishService.save(dishDto);
         // 调用 dishFlavorService 的 insert 方法保存菜品的口味信息
         dishFlavorService.insert(dishDto);
+
+        // 删除 Redis 中缓存的该分类下的菜品信息，确保数据一致性
+        redisTemplate.delete("dish_" + dishDto.getCategoryId() + "_1");
 
         // 返回成功响应，表示菜品新增成功
         return R.success("新增菜品成功");
@@ -154,6 +158,9 @@ public class DishController {
         // 调用dishFlavorService的updateDishFlavor方法，更新与菜品相关的风味信息
         dishFlavorService.updateDishFlavor(dishDto);
 
+        // 删除 Redis 中缓存的该分类下的菜品信息，确保数据一致性
+        redisTemplate.delete("dish_" + dishDto.getCategoryId() + "_1");
+
         // 返回成功响应，表示菜品信息修改成功
         return R.success("修改菜品信息成功");
     }
@@ -171,14 +178,17 @@ public class DishController {
         ids.stream()
                 // 创建Dish对象，设置ID和状态为0（表示停止销售）
                 .map(id -> {
-                            Dish dish = new Dish();
-                            dish.setId(id);
-                            dish.setStatus(0);
-                            return dish;
-                        }
-                ).toList()
+                    Dish dish = new Dish();
+                    dish.setId(id);
+                    dish.setStatus(0);
+                    return dish;
+                })
                 // 遍历列表，调用服务层方法更新每个菜品的状态
                 .forEach(dishService::updateById);
+
+        // 删除Redis中与菜品相关的缓存
+        Set<String> dishKeys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(dishKeys);
 
         // 返回操作成功的响应
         return R.success("停售成功");
@@ -205,6 +215,10 @@ public class DishController {
                 ).toList()
                 .forEach(dishService::updateById);
 
+        // 删除Redis中与菜品相关的缓存
+        Set<String> dishKeys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(dishKeys);
+
         // 返回成功响应，表示起售操作成功
         return R.success("起售成功");
     }
@@ -227,6 +241,10 @@ public class DishController {
         // 批量删除菜品
         dishService.removeBatchByIds(ids);
 
+        // 删除Redis中与菜品相关的缓存
+        Set<String> dishKeys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(dishKeys);
+
         // 返回删除成功的响应
         return R.success("删除成功");
     }
@@ -240,7 +258,9 @@ public class DishController {
      */
     @GetMapping("/list")
     public R<List<DishDto>> dishList(@RequestParam("categoryId") Long categoryId, @RequestParam("status") Integer status) {
+        // 构造缓存键值
         String key = "dish_" + categoryId + "_" + status;
+        // 检查缓存是否存在
         if (redisTemplate.hasKey(key))
             return R.success((List<DishDto>) redisTemplate.opsForValue().get(key));
 

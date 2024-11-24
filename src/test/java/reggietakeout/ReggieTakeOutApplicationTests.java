@@ -15,6 +15,7 @@ import reggietakeout.utils.CaptchaUtils;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @SpringBootTest
 @Slf4j
@@ -33,7 +34,7 @@ class ReggieTakeOutApplicationTests {
     private OrderDetailService orderDetailService;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Test
     void contextLoads() {
@@ -164,5 +165,12 @@ class ReggieTakeOutApplicationTests {
         ValueOperations value = redisTemplate.opsForValue();
         value.set("name", "eric");
         System.out.println(value.get("name"));
+    }
+
+    @Test
+    void testRedisDeleteKeys() {
+        Set<String> keys = redisTemplate.keys("key*");
+        System.out.println(keys);
+        redisTemplate.delete(keys);
     }
 }
