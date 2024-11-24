@@ -78,6 +78,10 @@ public class UserController {
 
         // 将当前用户信息保存到会话中，以便后续的请求可以识别用户
         request.getSession().setAttribute("user", user.getId());
+
+        // 登录成功后，删除Redis中存储的验证码，避免重复使用
+        redisTemplate.delete(phone);
+
         // 返回成功信息，包含用户信息
         return R.success(user);
     }

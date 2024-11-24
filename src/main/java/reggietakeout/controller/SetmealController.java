@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reggietakeout.common.R;
@@ -18,11 +19,14 @@ import reggietakeout.service.SetmealDishService;
 import reggietakeout.service.SetmealService;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/setmeal")
 @Slf4j
 public class SetmealController {
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Autowired
     private SetmealService setmealService;
     @Autowired
@@ -246,9 +250,31 @@ public class SetmealController {
         return R.success("修改成功");
     }
 
+    /**
+     * 根据类别ID和状态获取套餐列表
+     * 首先尝试从Redis缓存中获取数据，如果缓存不存在，则从数据库中查询，并将结果缓存到Redis中
+     *
+     * @param categoryId 类别ID，用于筛选套餐类别
+     * @param status 套餐状态，通常表示是否可用
+     * @return 返回一个包含套餐列表的响应对象
+     */
     @GetMapping("/list")
     public R<List<Setmeal>> list(@RequestParam("categoryId") Long categoryId, @RequestParam("status") Integer status) {
-        return R.success(setmealService.selectByCategoryId(categoryId, status));
+        // 构造缓存键值
+        String key = "setmeal_" + categoryId + "_" + status;
+        // 检查缓存是否存在
+        if (redisTemplate.hasKey(key))
+            // 如果缓存存在，直接返回缓存中的数据
+            return R.success((List<Setmeal>) redisTemplate.opsForValue().get(key));
+
+        // 如果缓存不存在，调用服务层方法从数据库中查询数据
+        List<Setmeal> setmeals = setmealService.selectByCategoryId(categoryId, status);
+
+        // 将查询到的数据存入缓存，并设置缓存过期时间
+        redisTemplate.opsForValue().set(key, setmeals, 15, TimeUnit.MINUTES);
+
+        // 返回查询结果
+        return R.success(setmeals);
     }
 
     /**

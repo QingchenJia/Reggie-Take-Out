@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reggietakeout.common.R;
@@ -15,11 +16,14 @@ import reggietakeout.service.DishFlavorService;
 import reggietakeout.service.DishService;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/dish")
 @Slf4j
 public class DishController {
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Autowired
     private DishService dishService;
     @Autowired
@@ -236,6 +240,10 @@ public class DishController {
      */
     @GetMapping("/list")
     public R<List<DishDto>> dishList(@RequestParam("categoryId") Long categoryId, @RequestParam("status") Integer status) {
+        String key = "dish_" + categoryId + "_" + status;
+        if (redisTemplate.hasKey(key))
+            return R.success((List<DishDto>) redisTemplate.opsForValue().get(key));
+
         // 根据类别ID查询菜品列表
         List<Dish> dishes = dishService.selectByCategoryId(categoryId);
 
@@ -259,6 +267,8 @@ public class DishController {
                     // 返回构建好的菜品DTO对象
                     return dishDto;
                 }).toList();
+
+        redisTemplate.opsForValue().set(key, dishDtos, 15, TimeUnit.MINUTES);
 
         // 返回包含菜品DTO列表的成功响应
         return R.success(dishDtos);
