@@ -27,10 +27,19 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         // 将 "/backend/**" 路径下的请求映射到类路径下的 "/backend/" 目录
         registry.addResourceHandler("/backend/**")
                 .addResourceLocations("classpath:/backend/");
-
         // 将 "/front/**" 路径下的请求映射到类路径下的 "/front/" 目录
         registry.addResourceHandler("/front/**")
                 .addResourceLocations("classpath:/front/");
+
+        // 映射Swagger UI的文档请求
+        registry.addResourceHandler("doc.html")
+                .addResourceLocations("classpath:/META-INF/resources/");
+        // 映射webjars资源请求
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+        // 映射favicon.ico请求
+        registry.addResourceHandler("/favicon.ico")
+                .addResourceLocations("classpath:/META-INF/resources/");
     }
 
     /**
@@ -50,7 +59,7 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         messageConverter.setObjectMapper(new JacksonObjectMapper());
 
         // 将自定义的消息转换器添加到列表的最前面，确保它优先被使用
-        converters.addFirst(messageConverter);
+        converters.add(converters.size() - 1, messageConverter);
     }
 
     /**
@@ -68,13 +77,21 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         registry.addInterceptor(loginCheckInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/employee/login",
-                        "/employee/logout",
+                        // 静态资源路径
                         "/backend/**",
                         "/front/**",
+                        // 登录和注销路径
+                        "/employee/login",
+                        "/employee/logout",
                         "/user/sendMsg",
                         "/user/login",
-                        "/user/loginout"
+                        "/user/loginout",
+                        // Swagger UI相关路径
+                        "/doc.html",
+                        "/webjars/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui.html",
+                        "/favicon.ico"
                 );
     }
 }
